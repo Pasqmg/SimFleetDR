@@ -18,22 +18,33 @@ from simfleet.utils.status import MANAGER_WAITING, MANAGER_REQUEST_POSITIONS, MA
 
 class WaitForRequestsState(DRFleetManagerStrategyBehaviour):
     """
-
+    Cyclic state that periodically checks whether new customer requests have arrived
     """
     async def on_start(self):
+        # For the first execution, set agent init time
         if self.agent.init_time is None:
             self.agent.init_time = time.time()
         self.agent.status = MANAGER_WAITING
         logger.debug("Manager {} in WaitForRequestsState".format(self.agent.agent_id))
 
     async def run(self):
+        # For the first execution
+        # If initial transport itineraries have not been sent, do so and loop
+        if not self.agent.check_initial_itineraries_sent():
+            await self.send_updated_itineraries()
+            self.agent.set_initial_itineraries_sent()
+            return self.set_next_state(MANAGER_WAITING)
+
+        # Usual behaviour, load requests file, check for new requests
         new_request = self.check_for_requests()
+        # If new requests, ask current transport positions, go to wait for reply
         if new_request:
-            # Reset dict of transport positions
+            # Clear dict of transport positions
             self.agent.clear_positions()
             # Send message to all transports
             await self.ask_transport_positions()
             return self.set_next_state(MANAGER_REQUEST_POSITIONS)
+        # If no new request, sleep for 10 seconds before checking again
         else:
             # sleep for 10 seconds
             await asyncio.sleep(10)
@@ -46,6 +57,7 @@ class RequestTransportPositionsState(DRFleetManagerStrategyBehaviour):
 
     def __init__(self):
         super().__init__()
+        # Clear number of pending messages
         self.n_pending = None
 
     async def on_start(self):

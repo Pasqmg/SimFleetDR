@@ -240,13 +240,13 @@ class DRTransportAgent(TransportAgent):
 
 class RegistrationBehaviour(CyclicBehaviour):
     """
-        Manages the registration process for the bus agent in the fleet.
+    Manages the registration process for the bus agent in the fleet.
 
-        Methods:
-            on_start(): Initializes the registration behavior.
-            send_registration(): Sends a registration proposal to the fleet manager.
-            run(): Executes the behavior, handling registration acceptance or rejection.
-        """
+    Methods:
+        on_start(): Initializes the registration behavior.
+        send_registration(): Sends a registration proposal to the fleet manager.
+        run(): Executes the behavior, handling registration acceptance or rejection.
+    """
 
     async def on_start(self):
         logger.debug("Strategy {} started in transport".format(type(self).__name__))
@@ -304,14 +304,13 @@ class RegistrationBehaviour(CyclicBehaviour):
 
 class TravelBehaviour(CyclicBehaviour):
     """
-    TODO
-    Listen for FleetManager requests of current position or itinerary updates.
+    Listen for FleetManager requests of current position or incoming itinerary updates.
     if current position, reply with self.get("current_pos")
-    if itinerary_update, update all_itinerary and itinerary, check if rerouting necessary
-        if rerouting, suspend movement (if any), suspend strategy behaviour, go to SelectDestState
+    if itinerary_update, update itinerary, check if immediate rerouting necessary
+        if immediate rerouting, suspend movement (if any), suspend strategy behaviour, go to SelectDestState
     """
     async def on_start(self):
-        pass
+        await super().on_start()
 
     async def send_current_position(self):
         msg = Message()
@@ -347,6 +346,7 @@ class TravelBehaviour(CyclicBehaviour):
                         logger.warning(f"Previous next stop changes after itinerary update:\n"
                                     f"Previous: {prev_next_stop}\n"
                                     f"Current: {self.agent.itinerary[self.agent.index_current_stop+1]}")
+                        # TODO Note to self: we should not use agent.status here
                         if self.agent.status == TRANSPORT_SELECT_DEST:
                             self.agent.set_rerouting()
                         if self.agent.status == TRANSPORT_MOVING_TO_DESTINATION:

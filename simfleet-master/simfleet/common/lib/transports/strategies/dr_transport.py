@@ -21,13 +21,10 @@ from simfleet.communications.protocol import (
 
 class InDestState(DRTransportStrategyBehaviour):
     """
-        State where the bus is at a stop and allows passengers to board or exit.
-
-        Methods:
-            on_start(): Initializes the state and sets the status of the agent.
-            run(): Manages passengers boarding and exiting, and updates statistics.
-        """
+    Cyclic state representing the transport waiting at a stop for until the departure time
+    """
     async def on_start(self):
+        # For the first execution, set agent init time
         if self.agent.init_time is None:
             self.agent.init_time = time.time()
         await super().on_start()
@@ -35,37 +32,36 @@ class InDestState(DRTransportStrategyBehaviour):
         logger.debug("Transport {} in TransportInDestState".format(self.agent.name))
 
     async def run(self):
-        # Wait until the transport has received the initial itinerary through the travel_behaviour
-        if self.itinerary is None:
+        # For the first execution
+        # Wait until the transport has received the initial itinerary from the manager through the travel_behaviour
+        if self.agent.itinerary is None:
             await asyncio.sleep(10)
             return self.set_next_state(TRANSPORT_WAITING)
 
         # Check if the transport needs to be immediately rerouted
         if self.agent.check_rerouting():
+            # If so, jump to SelectDestState
             return self.set_next_state(TRANSPORT_SELECT_DEST)
 
-        # Update agent current stop
+        # Set/update agent current stop
         self.agent.setup_current_stop()
         # According to the elapsed time, the transport departs the current stop or waits in it
         current_time = time.time() - self.agent.init_time
         if current_time >= self.agent.current_stop['departure_time'] :
             return self.set_next_state(TRANSPORT_SELECT_DEST)
         else:
-            # if we have to sleep, do so for 30 seconds (the transport may receive a message from the fleet manager)
+            # if the transport must wait, do so for 30 seconds
+            # (the transport may receive a message from the fleet manager)
             await asyncio.sleep(30)
             return self.set_next_state(TRANSPORT_WAITING)
 
 class SelectDestState(DRTransportStrategyBehaviour):
     """
-        State where the bus selects its next destination.
-
-        Methods:
-            on_start(): Initializes the state and sets the status of the agent.
-            run(): Determines the next stop based on the bus line type and moves to that stop.
-        """
+    One-shot* state in which the transport checks its itinerary to extract the next stop and being moving towards it
+        * may be executed twice if the transport requires rerouting and such a requirement is known between the
+          selection of the next stop and the beginning of the movement
+    """
     async def on_start(self):
-        if self.agent.init_time is None:
-            self.agent.init_time = time.time()
         await super().on_start()
         self.agent.status = TRANSPORT_SELECT_DEST
         logger.debug("Transport {} in TransportSelectDestState".format(self.agent.name))
@@ -92,11 +88,10 @@ class SelectDestState(DRTransportStrategyBehaviour):
 
 class MovingToDestState(DRTransportStrategyBehaviour):
     """
-        State where the bus is moving towards its next destination.
+    One-shot state in which the transport's strategy behaviour is suspended while it travels to the next stop
 
-        Methods:
-            on_start(): Initializes the state and sets the status of the agent.
-            run(): Waits for the bus to arrive at its destination and then transitions states.
+    The movement will be interrupted if the transport requires immediate rerouting. This can be trggered by the
+    travel behaviour
     """
 
     async def on_start(self):
@@ -123,7 +118,7 @@ class MovingToDestState(DRTransportStrategyBehaviour):
 
 class FSMDRTransportBehaviour(FSMSimfleetBehaviour):
     """
-        The finite state machine (FSM) that defines the behavior of the bus transport agent.
+    The finite state machine (FSM) that defines the behavior of the dr_transport agent.
 
         Methods:
             setup(): Configures the FSM with states and transitions.

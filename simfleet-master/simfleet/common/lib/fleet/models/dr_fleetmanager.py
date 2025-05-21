@@ -26,7 +26,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         self.database = None
         self.scheduler = None
         self.clear_positions()
-        # Hardcoded
+        # TODO Hardcoded, must be adapted before running
         self.dynamic_config_path = '/Users/pasqmg/PycharmProjects/SimFleetDR/input/dynamic_config.json'
         self.dynamic_stops_path = '/Users/pasqmg/PycharmProjects/SimFleetDR/input/dynamic_stops.json'
         # Scheduling
@@ -35,6 +35,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         self.scheduled_customers = [] # list of known and scheduled customers
         self.rejected_customers = [] # list of rejected customers/requests
         self.modified_itineraries = {}
+        self.initial_itineraries_sent = False
 
     async def setup(self):
         """
@@ -63,6 +64,12 @@ class DRFleetManagerAgent(FleetManagerAgent):
 
         # Get initial itineraries
         self.modified_itineraries = self.scheduler.get_all_itineraries_as_stop_list()
+
+    def check_initial_itineraries_sent(self):
+        return self.initial_itineraries_sent
+
+    def set_initial_itineraries_sent(self):
+        self.initial_itineraries_sent = True
 
     def clear_modified_itineraries(self):
         self.modified_itineraries = {}
