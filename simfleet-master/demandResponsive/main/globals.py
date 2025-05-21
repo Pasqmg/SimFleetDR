@@ -32,8 +32,8 @@ Adjust the values of these variables to run different experiments and define dem
 
 # ADCAIJ
 # Input/Output global variables
-INPUT_PATH = "/Users/pasqmg/PycharmProjects/SimFleetDR/input/"
-OUTPUT_PATH = "/Users/pasqmg/PycharmProjects/SimFleetDR/input/"
+INPUT_PATH = "/input/"
+OUTPUT_PATH = "/input/"
 # Intermediate path may be necessary depending on the data folder structure
 INTERMEDIATE_CONFIG_PATH = ""
 

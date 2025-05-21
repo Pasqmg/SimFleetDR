@@ -1,14 +1,16 @@
 import json
+from operator import truediv
 
 from loguru import logger
+from openpyxl.packaging.manifest import Override
 
-from simfleet.common.agents.fleetmanager import FleetManagerAgent
+from simfleet.common.agents.fleetmanager import FleetManagerStrategyBehaviour, FleetManagerAgent
 from simfleet.communications.protocol import TRAVEL_PROTOCOL, REQUEST_PERFORMATIVE
 from spade.message import Message
 from spade.behaviour import State
 
 from demandResponsive.main.database import Database
-from demandResponsive.main.launcher import itinerary_from_db
+from demandResponsive.main.launcher import itinerary_from_db, request_from_db
 from demandResponsive.main.request import Request
 from demandResponsive.main.scheduler import Scheduler
 
@@ -25,8 +27,8 @@ class DRFleetManagerAgent(FleetManagerAgent):
         self.scheduler = None
         self.clear_positions()
         # TODO Hardcoded, must be adapted before running
-        self.dynamic_config_path = '/Users/pasqmg/PycharmProjects/SimFleetDR/input/dynamic_config.json'
-        self.dynamic_stops_path = '/Users/pasqmg/PycharmProjects/SimFleetDR/input/dynamic_stops.json'
+        self.dynamic_config_path = '/input/dynamic_config.json'
+        self.dynamic_stops_path = '/input/dynamic_stops.json'
         # Scheduling
         self.known_customers = {} # customers already known by the manager
         self.unscheduled_customers = [] # list of known but unscheduled customers

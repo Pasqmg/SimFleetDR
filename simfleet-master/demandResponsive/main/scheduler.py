@@ -4,10 +4,10 @@ import math
 import numpy
 import numpy as np
 
-from database import Database
-from insertion import Insertion
-from itinerary import Itinerary
-from stop import Stop
+from demandResponsive.main.database import Database
+from demandResponsive.main.insertion import Insertion
+from demandResponsive.main.itinerary import Itinerary
+from demandResponsive.main.stop import Stop
 
 
 class Scheduler:

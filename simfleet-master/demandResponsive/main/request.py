@@ -1,6 +1,6 @@
-from utils import get_service_time
-from globals import MAXIMUM_WAITING_TIME_MINUTES, TRAVEL_FACTOR
-from stop import Stop
+from demandResponsive.main.utils import get_service_time
+from demandResponsive.main.globals import MAXIMUM_WAITING_TIME_MINUTES, TRAVEL_FACTOR
+from demandResponsive.main.stop import Stop
 
 
 class Request:

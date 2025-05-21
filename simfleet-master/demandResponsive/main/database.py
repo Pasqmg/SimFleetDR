@@ -4,8 +4,8 @@ import geopy.distance
 from loguru import logger
 
 from demandResponsive.main.utils import get_stop_coords
-from globals import CONFIG_PATH, ROUTES_FILE, STOPS_FILE
-from utils import request_route_to_server
+from demandResponsive.main.globals import CONFIG_PATH, ROUTES_FILE, STOPS_FILE
+from demandResponsive.main.utils import request_route_to_server
 
 class Database:
     """

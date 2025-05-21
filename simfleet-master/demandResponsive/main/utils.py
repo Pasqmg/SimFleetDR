@@ -3,7 +3,7 @@ import time
 
 import aiohttp
 
-from globals import SERVICE_MINUTES_PER_PASSENGER, STOPS_FILE
+from demandResponsive.main.globals import SERVICE_MINUTES_PER_PASSENGER, STOPS_FILE
 
 
 ################################################

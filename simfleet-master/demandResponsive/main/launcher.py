@@ -2,11 +2,11 @@ import argparse
 import json
 import os
 
-from globals import OUTPUT_PATH, CONFIG_PATH
-from database import Database
-from itinerary import Itinerary
-from request import Request
-from scheduler import Scheduler
+from demandResponsive.main.globals import OUTPUT_PATH, CONFIG_PATH
+from demandResponsive.main.database import Database
+from demandResponsive.main.itinerary import Itinerary
+from demandResponsive.main.request import Request
+from demandResponsive.main.scheduler import Scheduler
 
 VERBOSE = 0
 

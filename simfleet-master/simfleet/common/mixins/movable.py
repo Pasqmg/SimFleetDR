@@ -64,6 +64,11 @@ class MovableMixin:
             raise PathRequestException("Error requesting route.")
 
         self.set("path", path)
+        self.set("distance", distance) # in meters
+        self.set("duration", duration) # in seconds
+        speed_ms = self.get("distance") / self.get("duration") # in meters/seconds
+        speed_kmh = speed_ms * 3.6
+        self.set("speed_in_kmh", speed_kmh)
         try:
             self.chunked_path = chunk_path(path, self.get("speed_in_kmh"))
         except Exception as e:

@@ -3,7 +3,7 @@ import math
 import numpy
 import numpy as np
 
-from stop import Stop
+from demandResponsive.main.stop import Stop
 
 
 class Itinerary:
