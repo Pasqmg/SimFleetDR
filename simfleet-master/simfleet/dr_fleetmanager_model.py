@@ -27,8 +27,8 @@ class DRFleetManagerAgent(FleetManagerAgent):
         self.scheduler = None
         self.clear_positions()
         # TODO Hardcoded, must be adapted before running
-        self.dynamic_config_path = '/input/dynamic_config.json'
-        self.dynamic_stops_path = '/input/dynamic_stops.json'
+        self.dynamic_config_path = '/Users/pasqmg/PycharmProjects/SimFleetDR/input/dynamic_config.json'
+        self.dynamic_stops_path = '/Users/pasqmg/PycharmProjects/SimFleetDR/input/dynamic_stops.json'
         # Scheduling
         self.known_customers = {} # customers already known by the manager
         self.unscheduled_customers = [] # list of known but unscheduled customers
@@ -175,9 +175,6 @@ class DRFleetManagerAgent(FleetManagerAgent):
 
 class DRFleetManagerStrategyBehaviour(State):
     """
-    Inherited from FleetManagerStrategyBehaviour:
-        - get_transport_agents
-        - send_registration (to the Directory)
     """
 
     async def on_start(self):

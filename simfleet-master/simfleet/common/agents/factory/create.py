@@ -107,9 +107,9 @@ class FleetManagerFactory(Factory):
                      domain,
                      name,
                      password,
+                     class_,
                      default_strategy,
                      simulatorjid=None,
-                     class_=None,
                      optional=None,
                      strategy=None,
                      jid_directory=None,
@@ -144,7 +144,19 @@ class FleetManagerFactory(Factory):
                         """
         jid = f"{name}@{domain}"
         logger.debug("Creating FleetManager agent: {}".format(jid))
-        agent = FleetManagerAgent(jid, password)
+        # agent = FleetManagerAgent(jid, password)
+
+        # Load and instantiate agent class
+        if type(class_) is str:
+            agent_class = load_class(class_)
+            if optional:
+                agent = agent_class(jid, password, **optional)
+            else:
+                agent = agent_class(jid, password)
+        else:
+            logger.error(f"Erroneous class_: {class_}, {type(class_)}")
+            raise Exception("The agent needs a class in path format.")
+
         agent.set_id(name)
         agent.set_directory(jid_directory)
 

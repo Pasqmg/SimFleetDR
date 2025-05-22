@@ -4,7 +4,7 @@ import time
 
 from loguru import logger
 
-from simfleet.common.lib.fleet.models.dr_fleetmanager import DRFleetManagerStrategyBehaviour
+from simfleet.dr_fleetmanager_model import DRFleetManagerStrategyBehaviour
 from simfleet.communications.protocol import REQUEST_PROTOCOL, REQUEST_PERFORMATIVE
 from simfleet.utils.abstractstrategies import FSMSimfleetBehaviour
 from simfleet.utils.status import MANAGER_WAITING, MANAGER_REQUEST_POSITIONS, MANAGER_UPDATE
@@ -30,6 +30,7 @@ class WaitForRequestsState(DRFleetManagerStrategyBehaviour):
     async def run(self):
         # For the first execution
         # If initial transport itineraries have not been sent, do so and loop
+        logger.info(f"Agent {self.agent.agent_name} is {type(self.agent)}")
         if not self.agent.check_initial_itineraries_sent():
             await self.send_updated_itineraries()
             self.agent.set_initial_itineraries_sent()

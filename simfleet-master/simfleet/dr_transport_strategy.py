@@ -4,7 +4,7 @@ import time
 
 from loguru import logger
 
-from simfleet.common.lib.transports.models.dr_transport import DRTransportStrategyBehaviour
+from simfleet.dr_transport_model import DRTransportStrategyBehaviour
 from simfleet.utils.abstractstrategies import FSMSimfleetBehaviour
 
 from simfleet.utils.status import TRANSPORT_WAITING, TRANSPORT_MOVING_TO_DESTINATION, TRANSPORT_SELECT_DEST
