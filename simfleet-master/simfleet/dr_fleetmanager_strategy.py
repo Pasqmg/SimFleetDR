@@ -25,12 +25,16 @@ class WaitForRequestsState(DRFleetManagerStrategyBehaviour):
         if self.agent.init_time is None:
             self.agent.init_time = time.time()
         self.agent.status = MANAGER_WAITING
-        logger.debug("Manager {} in WaitForRequestsState".format(self.agent.agent_id))
+        logger.info("Manager {} in WaitForRequestsState".format(self.agent.agent_id))
 
     async def run(self):
         # For the first execution
-        # If initial transport itineraries have not been sent, do so and loop
-        logger.info(f"Agent {self.agent.agent_name} is {type(self.agent)}")
+        # If transport agents are not registered yet, wait
+        if len(self.agent.get_transport_agents()) < 10:
+            await asyncio.sleep(20)
+            return self.set_next_state(MANAGER_WAITING)
+
+        # If initial transport itineraries have not been sent, do so and load
         if not self.agent.check_initial_itineraries_sent():
             await self.send_updated_itineraries()
             self.agent.set_initial_itineraries_sent()
@@ -48,6 +52,9 @@ class WaitForRequestsState(DRFleetManagerStrategyBehaviour):
         # If no new request, sleep for 10 seconds before checking again
         else:
             # sleep for 10 seconds
+            logger.debug(
+                f"Manager {self.agent.agent_id} does not have new requests or still has no transports "
+                f"{len(self.agent.get_transport_agents())}")
             await asyncio.sleep(10)
             return self.set_next_state(MANAGER_WAITING)
 
@@ -63,7 +70,7 @@ class RequestTransportPositionsState(DRFleetManagerStrategyBehaviour):
 
     async def on_start(self):
         self.agent.staus = MANAGER_REQUEST_POSITIONS
-        logger.debug("Manager {} in RequestTransportPositions".format(self.agent.agent_id))
+        logger.info("Manager {} in RequestTransportPositions".format(self.agent.agent_id))
 
         # Pending number of messages to process in this iteration
         n_transports = len(self.agent.get_transport_agents())
@@ -72,7 +79,7 @@ class RequestTransportPositionsState(DRFleetManagerStrategyBehaviour):
 
     async def run(self):
         if self.n_pending > 0:
-            msg = await self.receive(timeout=5)
+            msg = await self.receive(timeout=10)
             if msg:
                 sender = msg.sender
                 sender_position = None
@@ -92,6 +99,7 @@ class RequestTransportPositionsState(DRFleetManagerStrategyBehaviour):
                         current_positions[str(sender)] = sender_position
                         self.agent.set_transport_positions(current_positions)
 
+                        # TODO self.agent.check_if_stop_exists(sender_position) before creating it
                         # Add sender position as a new database stop
                         self.agent.create_and_add_transport_stop(vehicle_id=msg.sender,
                                                                  current_time=time.time() - self.agent.init_time,
@@ -108,7 +116,7 @@ class SendUpdatedItineraries(DRFleetManagerStrategyBehaviour):
     """
     async def on_start(self):
         self.agent.status = MANAGER_UPDATE
-        logger.debug("Manager {} in SendUpdatedItineraries".format(self.agent.agent_id))
+        logger.info("Manager {} in SendUpdatedItineraries".format(self.agent.agent_id))
 
     async def run(self):
         # Pass transport_positions to Scheduler

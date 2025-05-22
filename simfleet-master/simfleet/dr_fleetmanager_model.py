@@ -46,23 +46,28 @@ class DRFleetManagerAgent(FleetManagerAgent):
 
     def demandResponsive_setup(self):
         # Create database
+        logger.debug(f"Manager {self.agent_id} loading database")
         self.database = Database()
 
         # Load config and update database
+        logger.debug(f"Manager {self.agent_id} loading config")
         file = open(self.dynamic_config_path, 'r')
         config_dict = json.load(file)
         self.database.update_config(config_dict)
 
         # Load itineraries from config file
+        logger.debug(f"Manager {self.agent_id} extracting initial itineraries from database")
         itineraries, itinerary_insertion_dic = itinerary_from_db(self.database)
 
         # Create and initialize scheduler object
+        logger.debug(f"Manager {self.agent_id} creating scheduler")
         self.scheduler = Scheduler(self.database)
         self.scheduler.pending_requests = []
         self.scheduler.itineraries = itineraries
         self.scheduler.itinerary_insertion_dic = itinerary_insertion_dic
 
         # Get initial itineraries
+        logger.debug(f"Manager {self.agent_id} getting initial itineraries from scheduler")
         self.modified_itineraries = self.scheduler.get_all_itineraries_as_stop_list()
 
     def check_initial_itineraries_sent(self):
@@ -110,6 +115,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         precondition: The customer dict must be in self.database
         :return:
         """
+        logger.debug(f"Manager {self.agent_id} creating request for customer {customer_name}")
         req = None
         customers = self.database.get_customers()
         for customer in customers:
@@ -133,40 +139,50 @@ class DRFleetManagerAgent(FleetManagerAgent):
         return req
 
     def load_and_update_dynamic_stops(self, new_stop):
+        logger.debug(f"Manager {self.agent_id} in load_and_update_dynamic_stops with {new_stop}")
         # Read file
         file = open(self.dynamic_stops_path, 'r')
         stops_dict = json.load(file)
         # Update JSON
         stops_dict["features"].append(new_stop)
         # Save file
-        file = open(self.dynamic_config_path, 'w')
+        file = open(self.dynamic_stops_path, 'w')
         json.dump(stops_dict, file)
 
     def create_and_add_stop(self, customer_name, type, issue_time, coords):
+        logger.debug(f"Manager {self.agent_id} creating stop for customer {customer_name}, type {type}, "
+                     f"issue time {issue_time}, coords {coords}")
+        inverted_coords = [coords[1], coords[0]]
+        logger.warning(f"Stops are created inverting coordinates: {coords} --> {inverted_coords}")
         stop =  {
             "type": "Feature",
             "geometry": {
-            "coordinates": coords
+            "coordinates": inverted_coords,
         }, "id": str(customer_name)+"-"+str(type)+"-"+str(issue_time)}
         # Add stop to dynamic_stops file
         self.load_and_update_dynamic_stops(stop) # TODO may be unnecessary, may be costly
         self.database.add_stop(stop)
 
-    def create_and_add_transport_stop(self, vehicle_id, issue_time, coords):
+    def create_and_add_transport_stop(self, vehicle_id, current_time, coords):
+        logger.debug(f"Manager {self.agent_id} creating stop for transport {vehicle_id}, current_time {current_time}"
+                     f", coords {coords}")
         self.create_and_add_stop(customer_name=vehicle_id, type="current", issue_time=0, coords=coords)
 
     def add_customer_to_database(self, customer_dict):
+        logger.debug(f"Manager {self.agent_id} adding customer to database {customer_dict}")
         self.database.add_customer(customer_dict)
 
     def add_request_to_scheduler(self, request):
+        logger.debug(f"Manager {self.agent_id} adding request to scheduler {request}")
         # Add customer to unscheduled customers
         self.unscheduled_customers.append(request.passenger_id)
         # Update the scheduler
         self.scheduler.pending_requests.append(request)
 
     async def schedule_new_requests(self):
+        logger.debug(f"Manager {self.agent_id} began scheduling new requests...")
         self.clear_modified_itineraries()
-        end, rejected = await self.scheduler.schedule_new_requests()
+        end, rejected = await self.scheduler.schedule_new_requests(verbose=1)
         if len(rejected) > 0:
             pass
         # Once the scheduler finishes, we have new itineraries in
@@ -184,6 +200,7 @@ class DRFleetManagerStrategyBehaviour(State):
         logger.debug("Strategy {} started in manager".format(type(self).__name__))
 
     def check_for_requests(self) -> bool:
+        logger.debug(f"Manager {self.agent.agent_id} checking if new requests appeared...")
         # Load customers from dynamic_config
         file = open(self.agent.dynamic_config_path, "r")
         dynamic_config = json.load(file)
@@ -191,6 +208,7 @@ class DRFleetManagerStrategyBehaviour(State):
         # Compare those customers with known customers
         new_customers = [x for x in current_customers if x['name'] not in self.agent.known_customers.keys()]
         if new_customers:
+            logger.debug(f"\t there are {len(new_customers)} new request(s)")
             # Crate customer's stops and add them to dynamic stops and the database stops
             for new_customer in new_customers:
                 # Create origin stop
@@ -201,6 +219,7 @@ class DRFleetManagerStrategyBehaviour(State):
                                                new_customer["destination"])
                 # Add new customer to database
                 self.agent.add_customer_to_database(new_customer)
+                self.agent.add_customer(new_customer)
                 # Create customer request
                 new_request = self.agent.create_request_from_customer(new_customer["name"])
                 # Add new customer to scheduler.pending_requests
@@ -212,12 +231,15 @@ class DRFleetManagerStrategyBehaviour(State):
         """
         Sends a message to every registered transport agent asking for its current position.
         """
+        logger.debug(f"Manager {self.agent.agent_id} asking transports for their current position")
         # Message contents
-        contents = {"position"}
+        contents = {"position": []}
         transports = self.agent.get_transport_agents()
-        for agent in transports:
+        for vehicle_id in transports.keys():
+            agent_data = transports[vehicle_id]
+            logger.debug(f"Manager {self.agent.agent_id} sending message to transport {agent_data['jid']}")
             msg = Message()
-            msg.to = str(agent.jid)
+            msg.to = str(agent_data["jid"])
             msg.set_metadata("protocol", TRAVEL_PROTOCOL)
             msg.set_metadata("performative", REQUEST_PERFORMATIVE)
             msg.body = json.dumps(contents)
@@ -241,14 +263,17 @@ class DRFleetManagerStrategyBehaviour(State):
         """
         For each transport agent with a modified itinerary, send a message with new itinerary
         """
+        logger.debug(f"Manager {self.agent.agent_id} sending updated itineraries to all transports")
+        transports = self.agent.get_transport_agents()
         for agent_name in self.agent.modified_itineraries.keys():
-            await self.send_update_transport_itinerary(agent_name)
+            await self.send_update_transport_itinerary(transports[agent_name]["jid"])
 
     async def send_update_transport_itinerary(self, agent_name):
         """
         Sends a message to transport agent_name containing its new itinerary.
         """
         # Message contents
+        logger.debug(f"Manager {self.agent.agent_id} sending message to transport {agent_name}")
         modified_itinerary = None
         try:
             modified_itinerary = self.agent.get_modified_itinerary(agent_name)

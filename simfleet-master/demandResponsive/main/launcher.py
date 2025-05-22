@@ -2,6 +2,8 @@ import argparse
 import json
 import os
 
+from loguru import logger
+
 from demandResponsive.main.globals import OUTPUT_PATH, CONFIG_PATH
 from demandResponsive.main.database import Database
 from demandResponsive.main.itinerary import Itinerary
@@ -72,6 +74,8 @@ def itinerary_from_db(database):
     """
     db = database
     transports = db.get_transports()
+    if transports is None:
+        logger.error(f"Launcher did not get transports from database: {transports}")
     itineraries = []
     itinerary_insertion_dic = {}
     for transport in transports:

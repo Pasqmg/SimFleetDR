@@ -3,6 +3,7 @@ import math
 
 import numpy
 import numpy as np
+from loguru import logger
 
 from demandResponsive.main.database import Database
 from demandResponsive.main.insertion import Insertion
@@ -129,7 +130,7 @@ class Scheduler:
     def get_all_itineraries_as_stop_list(self):
         tmp_dict = {}
         for I in self.itineraries:
-            tmp_dict[I.id] = self.get_itinerary_as_stop_list(I.id)
+            tmp_dict[I.vehicle_id] = self.get_itinerary_as_stop_list(I.vehicle_id)
         return tmp_dict
 
 
@@ -168,7 +169,7 @@ class Scheduler:
         await self.db.get_route_from_server(Spu.id, Ssd.id)
 
         if verbose > 0:
-            print(f"New request arrived at time {issue_time}")
+            logger.debug(f"New request arrived at time {issue_time}")
 
         # First step, get vehicle current location at time issue_time
         #   or
@@ -185,9 +186,9 @@ class Scheduler:
             if len(dummy_itinerary.stop_list) > 2:  # Non empty route
                 index_current, status = I.get_vehicle_position_at_time(issue_time)
                 if verbose>0:
-                    print(f"Vehicle {I.vehicle_id} is {status} num. {index_current} at time {issue_time}")
+                    logger.debug(f"Vehicle {I.vehicle_id} is {status} num. {index_current} at time {issue_time}")
             elif verbose>0:
-                print(f"Vehicle {I.vehicle_id} is at its origin stop at time {issue_time}")
+                logger.debug(f"Vehicle {I.vehicle_id} is at its origin stop at time {issue_time}")
 
             # If the vehicle is at the last stop, mark found insertions as requiring a new 'fake' final stop
             new_final_stop = False
@@ -199,7 +200,7 @@ class Scheduler:
             # to do so, we need a 'fake' stop representing the vehicle's current position
             if index_current > 0 and status == "travelling_to_stop":
                 if verbose>0:
-                    print(f"Adding vehicle {I.vehicle_id} current position as a stop in dummy itinerary")
+                    logger.debug(f"Adding vehicle {I.vehicle_id} current position as a stop in dummy itinerary")
                 # Create fake stop located at vehicle's current position
                 current_stop = self.create_current_stop(I.vehicle_id, issue_time)
                 # Compute route between prev, current and next stops (prev and next stop should be in the db)
@@ -215,11 +216,11 @@ class Scheduler:
             # from filtered_stops_i, keep only those whose EAT is lower than Spu.latest
             previous_to_Spu = [new_stop_from_stop(x) for x in filtered_stops_i if x.eat < Spu.latest]
             if verbose > 0:
-                print(f"\tSearching in {len(previous_to_Spu)} nodes")
+                logger.debug(f"\tSearching in {len(previous_to_Spu)} nodes")
             # Request all routes to test Spu insertion
             await self.request_routes_to_server(Spu, previous_to_Spu)
             if verbose > 0:
-                print(f"\tAll necessary routes for pickup stop {Spu.id}'s insertion have been computed")
+                logger.debug(f"\tAll necessary routes for pickup stop {Spu.id}'s insertion have been computed")
 
             # from filtered_stops_i, keep only those whose EAT is lower than Ssd.latest
             previous_to_Ssd = [new_stop_from_stop(x) for x in filtered_stops_i if x.eat < Ssd.latest]
@@ -229,21 +230,21 @@ class Scheduler:
             # at this point, the scheduler is ready to assess the request's insertion in itinerary I
             for index_stop_i in range(len(filtered_stops_i) - 1):
                 if verbose > 0:
-                    print("\t\tTesting insertion of Spu in position {}".format(index_stop_i + index_current + 1))
+                    logger.debug("\t\tTesting insertion of Spu in position {}".format(index_stop_i + index_current + 1))
                 # extract leg R -> T
                 # DEBUG
                 try:
                     R = filtered_stops_i[index_stop_i]
                 except IndexError:
-                    print("ERROR Searching inside itinerary {}".format(I.vehicle_id))
-                    print(I.to_string())
-                    print()
-                    print("with the following list of filtered stops: {}".format([x.id for x in filtered_stops_i]))
+                    logger.error("ERROR Searching inside itinerary {}".format(I.vehicle_id))
+                    logger.error(I.to_string())
+                    logger.error("")
+                    logger.error("with the following list of filtered stops: {}".format([x.id for x in filtered_stops_i]))
                     for x in filtered_stops_i:
-                        print(x.to_string())
-                    print()
-                    print("and an index_stop_i of: {}".format(index_stop_i))
-                    print(len(filtered_stops_i), index_stop_i)
+                        logger.debug(x.to_string())
+                    logger.error("")
+                    logger.error("and an index_stop_i of: {}".format(index_stop_i))
+                    logger.error(str(len(filtered_stops_i)), index_stop_i)
                     exit()
 
                 T = R.snext
@@ -252,7 +253,7 @@ class Scheduler:
                 test, code = I.pickup_insertion_feasibility_check(request, Spu, R, T)
                 if test:
                     if verbose > 0:
-                        print("\t\t\tfeasible")
+                        logger.debug("\t\t\tfeasible")
                     # Once we select a feasible leg to insert Spu, store the index
                     index_Spu = index_stop_i + index_current + 1
                     # Copy of the itinerary to avoid modifications over the original
@@ -272,7 +273,7 @@ class Scheduler:
 
                         for index_stop_j in range(len(filtered_stops_j) - 1):
                             if verbose > 0:
-                                print("\t\t\t\tTesting insertion of Ssd in position {}"
+                                logger.debug("\t\t\t\tTesting insertion of Ssd in position {}"
                                       .format(index_stop_j + index_Spu + 1))
                             R = filtered_stops_j[index_stop_j]
                             T = R.snext
@@ -281,7 +282,7 @@ class Scheduler:
                                                                                         I_with_Spu.stop_list, Ssd, R, T)
                             if test:
                                 if verbose > 0:
-                                    print("\t\t\t\t\tfeasible")
+                                    logger.debug("\t\t\t\t\tfeasible")
                                 # Once we select a feasible leg to insert Ssd, store the index
                                 index_Ssd = index_stop_j + index_Spu + 1
                                 # Copy of the itinerary to avoid modifications over the original
@@ -302,7 +303,7 @@ class Scheduler:
                                     best_insertion = found
                             else:
                                 if verbose > 0:
-                                    print("\t\t\t\tunfeasible")
+                                    logger.debug("\t\t\t\tunfeasible")
                                 # Try in next Spu's position
                                 if code == 0:
                                     break
@@ -310,13 +311,13 @@ class Scheduler:
                     # end of delta_i < delta_min check
                 else:
                     if verbose > 0:
-                        print("\t\tunfeasible")
+                        logger.debug("\t\tunfeasible")
                     # Go to next itinerary
                     if code == 0:
                         break
             # end of filtered_stops_i for
         if verbose > 0:
-            print()
+            logger.debug()
         return best_insertion, feasible_insertions
 
     def exhaustive_search(self, t, verbose=0):
@@ -554,16 +555,18 @@ class Scheduler:
         """
         local_rejected_requests = [] # Rejected requests for THIS search process
         if verbose > 0:
-            print(f"Scheduling {len(self.pending_requests)} new requests")
+            logger.debug(f"Scheduling {len(self.pending_requests)} new requests")
+            for req in self.pending_requests:
+                logger.debug(f"{req.to_string()}")
         for i, request in enumerate(self.pending_requests):
             if verbose > 0:
-                print(f"Scheduling requst num. {i} (customer {request.passenger_id})")
+                logger.debug(f"Scheduling request num. {i} (customer {request.passenger_id})")
             issue_time = self.db.get_customer_issue_time(request.passenger_id)
             best_insertion, feasible_insertions = await self.schedule_request(request, issue_time, verbose=verbose)
             if best_insertion is not None:
                 if verbose > 0:
-                    print("Found best insertion")
-                    print(best_insertion.to_string())
+                    logger.debug("Found best insertion")
+                    logger.debug(best_insertion.to_string())
                 # Update itineraries
                 self.insert_trip(best_insertion)
                 # Delete pending request
@@ -575,14 +578,14 @@ class Scheduler:
                 self.modified_itineraries[vehicle_id] = self.get_itinerary_as_stop_list(vehicle_id)
             else:
                 if verbose > 0:
-                    print(f"Request from customer {request.passenger_id} cannot be scheduled")
+                    logger.debug(f"Request from customer {request.passenger_id} cannot be scheduled")
                 # No insertion has been found for the request
                 self.delete_pending_request(request.passenger_id)
                 # Add request to rejected requests
                 self.rejected_requests.append(request)
                 local_rejected_requests.append(request.passenger_id)
         if verbose > 0:
-            print(f"All requests have been processed {len(self.pending_requests)} new requests")
+            logger.debug(f"All requests have been processed {len(self.pending_requests)} new requests")
         return True, local_rejected_requests
 
     def schedule_all_requests_by_minimal_cost(self, verbose=0):

@@ -310,7 +310,7 @@ class TravelBehaviour(CyclicBehaviour):
         if immediate rerouting, suspend movement (if any), suspend strategy behaviour, go to SelectDestState
     """
     async def on_start(self):
-        await super().on_start()
+        logger.debug("Strategy {} started in transport".format(type(self).__name__))
 
     async def send_current_position(self):
         msg = Message()
@@ -322,7 +322,7 @@ class TravelBehaviour(CyclicBehaviour):
         await self.send(msg)
 
     async def run(self):
-        msg = await self.receive(timeout=5)
+        msg = await self.receive(timeout=10)
         if msg:
             sender = msg.sender
             content = json.loads(msg.body)
@@ -335,7 +335,7 @@ class TravelBehaviour(CyclicBehaviour):
             # Manager sending new itinerary
             elif "new_itinerary" in content.keys():
                 new_itinerary = content.get("new_itinerary")
-                if self.agent.all_itinerary is None:
+                if self.agent.itinerary is None:
                     # First time the transport receives the itinerary
                     self.agent.update_itinerary(new_itinerary)
                 else:
