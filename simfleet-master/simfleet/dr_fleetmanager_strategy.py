@@ -30,8 +30,9 @@ class WaitForRequestsState(DRFleetManagerStrategyBehaviour):
     async def run(self):
         # For the first execution
         # If transport agents are not registered yet, wait
-        if len(self.agent.get_transport_agents()) < 10:
-            await asyncio.sleep(20)
+        logger.error("Manager strategy not run until they have registered more than 0 transports!!!")
+        if len(self.agent.get_transport_agents()) == 0 :
+            await asyncio.sleep(5)
             return self.set_next_state(MANAGER_WAITING)
 
         # If initial transport itineraries have not been sent, do so and load
@@ -122,7 +123,7 @@ class SendUpdatedItineraries(DRFleetManagerStrategyBehaviour):
         # Pass transport_positions to Scheduler
         self.agent.pass_transport_positions()
         # Compute new itineraries
-        await self.compute_new_itineraries()
+        await self.compute_new_itineraries(verbose=1)
         # Send updated itinerary to the corresponding transport
         await self.send_updated_itineraries()
         # TODO maybe await for OK from transports?

@@ -161,11 +161,13 @@ class Scheduler:
         # Insertion with the minimum cost increment found so far
         best_insertion = None
 
+        logger.debug(f"Extracting request {request.passenger_id} stops: Spu and Ssd")
         # Extract Request's stops
         Spu = new_stop_from_stop(request.Spu)
         Ssd = new_stop_from_stop(request.Ssd)
 
         # Compute route between origin and destination
+        logger.debug(f"Computing and saving route between {Spu.id}({Spu.coords}) and {Ssd.id}({Ssd.coords})")
         await self.db.get_route_from_server(Spu.id, Ssd.id)
 
         if verbose > 0:
@@ -175,7 +177,7 @@ class Scheduler:
         #   or
         # Assume it from what SimFleet sends
         for I in self.itineraries:
-
+            logger.debug(f"Assessing insertion in itinerary {I.vehicle_id}")
             # Copy of the vehicle to avoid changes during the search
             dummy_itinerary = new_itinerary_from_itinerary(I)
 

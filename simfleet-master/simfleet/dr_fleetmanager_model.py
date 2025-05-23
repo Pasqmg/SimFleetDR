@@ -1,18 +1,16 @@
 import json
-from operator import truediv
 
 from loguru import logger
-from openpyxl.packaging.manifest import Override
-
-from simfleet.common.agents.fleetmanager import FleetManagerStrategyBehaviour, FleetManagerAgent
-from simfleet.communications.protocol import TRAVEL_PROTOCOL, REQUEST_PERFORMATIVE
-from spade.message import Message
 from spade.behaviour import State
+from spade.message import Message
 
 from demandResponsive.main.database import Database
-from demandResponsive.main.launcher import itinerary_from_db, request_from_db
+from demandResponsive.main.globals import CONFIG_PATH, STOPS_FILE
+from demandResponsive.main.launcher import itinerary_from_db
 from demandResponsive.main.request import Request
 from demandResponsive.main.scheduler import Scheduler
+from simfleet.common.agents.fleetmanager import FleetManagerAgent
+from simfleet.communications.protocol import TRAVEL_PROTOCOL, REQUEST_PERFORMATIVE
 
 
 class DRFleetManagerAgent(FleetManagerAgent):
@@ -27,8 +25,8 @@ class DRFleetManagerAgent(FleetManagerAgent):
         self.scheduler = None
         self.clear_positions()
         # TODO Hardcoded, must be adapted before running
-        self.dynamic_config_path = '/Users/pasqmg/PycharmProjects/SimFleetDR/input/dynamic_config.json'
-        self.dynamic_stops_path = '/Users/pasqmg/PycharmProjects/SimFleetDR/input/dynamic_stops.json'
+        self.dynamic_config_path = CONFIG_PATH
+        self.dynamic_stops_path = STOPS_FILE
         # Scheduling
         self.known_customers = {} # customers already known by the manager
         self.unscheduled_customers = [] # list of known but unscheduled customers
@@ -179,10 +177,10 @@ class DRFleetManagerAgent(FleetManagerAgent):
         # Update the scheduler
         self.scheduler.pending_requests.append(request)
 
-    async def schedule_new_requests(self):
+    async def schedule_new_requests(self, verbose=0):
         logger.debug(f"Manager {self.agent_id} began scheduling new requests...")
         self.clear_modified_itineraries()
-        end, rejected = await self.scheduler.schedule_new_requests(verbose=1)
+        end, rejected = await self.scheduler.schedule_new_requests(verbose=verbose)
         if len(rejected) > 0:
             pass
         # Once the scheduler finishes, we have new itineraries in
@@ -246,7 +244,7 @@ class DRFleetManagerStrategyBehaviour(State):
             await self.send(msg)
 
 
-    async def compute_new_itineraries(self):
+    async def compute_new_itineraries(self, verbose=0):
         """
         Executes the scheduler for the new requests. Before that, we must have:
         1) Detected new customers and created their associated stops and requests (self.check_for_requests())
@@ -256,7 +254,7 @@ class DRFleetManagerStrategyBehaviour(State):
             - self.agent.create_and_add_transport_stop
             - self.agent.pass_transport_positions()
         """
-        await self.agent.schedule_new_requests()
+        await self.agent.schedule_new_requests(verbose=verbose)
         # once the process finishes, modified itineraries are in self.agent.modified_itineraries
 
     async def send_updated_itineraries(self):

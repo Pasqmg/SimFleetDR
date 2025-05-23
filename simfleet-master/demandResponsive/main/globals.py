@@ -33,16 +33,17 @@ Adjust the values of these variables to run different experiments and define dem
 # ADCAIJ
 # Input/Output global variables
 INPUT_PATH = "/Users/pasqmg/PycharmProjects/SimFleetDR/input/"
-OUTPUT_PATH = "/Users/pasqmg/PycharmProjects/SimFleetDR/input/"
+EXPERIMENT_PATH = INPUT_PATH + "1-transport/"
+OUTPUT_PATH = EXPERIMENT_PATH + "output/"
 # Intermediate path may be necessary depending on the data folder structure
 INTERMEDIATE_CONFIG_PATH = ""
 
 # Path to folder containing problem configuration files
-CONFIG_PATH = INPUT_PATH + "dynamic_config.json"
+CONFIG_PATH = EXPERIMENT_PATH + "dynamic_config.json"
 # Adjust to routes file name
-ROUTES_FILE = INPUT_PATH + 'empty_routes.json'
+ROUTES_FILE = EXPERIMENT_PATH + 'empty_routes.json'
 # Adjust to stops file name
-STOPS_FILE = INPUT_PATH + 'dynamic_stops.json'
+STOPS_FILE = EXPERIMENT_PATH + 'dynamic_stops.json'
 
 # Demand-generation global variables, which affect the time window computation of each Stop within a Request
 # OSRM petition url

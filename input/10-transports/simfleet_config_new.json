@@ -174,7 +174,7 @@
     }
     ],
     "customers": [],
-    "simulation_name": "demand-responsive",
+    "simulation_name": "10-transports_DR",
     "max_time": 10000,
     "transport_strategy": "simfleet.dr_transport_strategy.FSMDRTransportStrategyBehaviour",
     "fleetmanager_strategy": "simfleet.dr_fleetmanager_strategy.FSMDRFleetManagerStrategyBehaviour",
