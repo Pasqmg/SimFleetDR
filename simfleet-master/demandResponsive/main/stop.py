@@ -112,7 +112,8 @@ class Stop:
         if self.sprev is None:
             self.eat = self.eat_f = self.start_time
         else:
-            self.eat = max(self.sprev.start_time, self.sprev.eat) + self.sprev.service_time + self.sprev.leg_time
+            # self.eat = max(self.sprev.start_time, self.sprev.eat) + self.sprev.service_time + self.sprev.leg_time
+            self.eat = max(self.sprev.eat_f + self.sprev.service_time, self.start_time) + self.sprev.leg_time
             self.eat_f = max(self.start_time, self.eat)
 
     def set_LDT(self):
@@ -185,7 +186,7 @@ class Stop:
 
         The visit to the stop is therefore defined by [EAT, LDT-slack_time].
         """
-        self.slack = self.ldt - self.eat - self.service_time
+        self.slack = self.ldt_f - self.eat_f - self.service_time
         # if self.slack < 0:
         #     print(f"WARNING :: Negative slack time ({self.slack:.2f}) in stop {self.id}\n"
         #           f"\tLDT: {self.ldt:.2f}, EAT: {self.eat:.2f}, service_time: {self.service_time:.2f}")
@@ -198,8 +199,8 @@ class Stop:
         if self.sprev is None:
            self.arrival_time = self.start_time
         else:
-           self.arrival_time = max(self.start_time + self.sprev.leg_time, self.eat_f)
             #self.arrival_time = self.eat_f
+            self.arrival_time = max(self.start_time + self.sprev.leg_time, self.eat_f)
         if self.snext is not None:
             # self.departure_time = self.snext.eat_f - self.leg_time
             self.departure_time = max(self.snext.start_time, self.snext.eat_f - self.leg_time)
