@@ -75,8 +75,14 @@ class DRTransportAgent(TransportAgent):
         the next stop of the transport.
         This allows us to check if immediate rerouting is needed.
         """
+        logger.debug(f"Transport {self.agent_id} updating itinerary while at its {self.index_current_stop} stop: "
+                     f"{self.current_stop}")
         prev_next_stop = None
         if self.itinerary is not None:
+            # TODO ensure transport is not at last stop
+            if self.index_current_stop == len(self.itinerary)-1:
+                logger.error(f"Transport {self.agent_id} is at the last stop of its itinerary, cannot update it")
+                sys.exit(1)
             prev_next_stop = self.itinerary[self.index_current_stop+1]
         self.itinerary = new_itinerary
         return prev_next_stop
@@ -343,7 +349,7 @@ class TravelBehaviour(CyclicBehaviour):
                     prev_next_stop = self.agent.update_itinerary(new_itinerary)
                     # If the next stop is no longer the same, we need rerouting
                     if not self.agent.compare_stops(prev_next_stop, self.agent.itinerary[self.agent.index_current_stop+1]):
-                        logger.warning(f"Previous next stop changes after itinerary update:\n"
+                        logger.debug(f"Previous next stop changes after itinerary update:\n"
                                     f"Previous: {prev_next_stop}\n"
                                     f"Current: {self.agent.itinerary[self.agent.index_current_stop+1]}")
                         # TODO Note to self: we should not use agent.status here

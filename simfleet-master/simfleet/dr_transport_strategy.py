@@ -35,24 +35,38 @@ class InDestState(DRTransportStrategyBehaviour):
         # For the first execution
         # Wait until the transport has received the initial itinerary from the manager through the travel_behaviour
         if self.agent.itinerary is None:
+            logger.warning(f"Transport {self.agent.name} waiting for its initial itinerary")
             await asyncio.sleep(10)
             return self.set_next_state(TRANSPORT_WAITING)
 
+        # Set/update agent current stop
+        self.agent.setup_current_stop()
+        current_time = time.time() - self.agent.init_time
+        logger.info(f"Transport {self.agent.name} in stop {self.agent.current_stop['stop_id']} "
+                    f"[{self.agent.index_current_stop}/{len(self.agent.itinerary)-1}] "
+                    f"at time {current_time:.2f} (seconds)\n{self.agent.current_stop}")
+        # If the next stop is the last one in the itinerary, wait at the current stop
+        if self.agent.index_current_stop == len(self.agent.itinerary)-2:
+            logger.warning(f"Transport {self.agent.name} is waiting at its penultimate stop.")
+            await asyncio.sleep(30)
+            return self.set_next_state(TRANSPORT_WAITING)
+
+        # If the transport is active (more than 2 stops in its itinerary)...
         # Check if the transport needs to be immediately rerouted
         if self.agent.check_rerouting():
+            logger.warning(f"Transport {self.agent.name} requires immediate rerouting.")
             # If so, jump to SelectDestState
             return self.set_next_state(TRANSPORT_SELECT_DEST)
 
-        # Set/update agent current stop
-        self.agent.setup_current_stop()
         # According to the elapsed time, the transport departs the current stop or waits in it
-        current_time = time.time() - self.agent.init_time
         if current_time >= self.agent.current_stop['departure_time'] :
             return self.set_next_state(TRANSPORT_SELECT_DEST)
         else:
             # if the transport must wait, do so for 30 seconds
             # (the transport may receive a message from the fleet manager)
-            await asyncio.sleep(30)
+            logger.info(f"Transport {self.agent.name} waiting for departure at time "
+                        f"{self.agent.current_stop['departure_time']:.2f}")
+            await asyncio.sleep(5)
             return self.set_next_state(TRANSPORT_WAITING)
 
 class SelectDestState(DRTransportStrategyBehaviour):
@@ -64,11 +78,12 @@ class SelectDestState(DRTransportStrategyBehaviour):
     async def on_start(self):
         await super().on_start()
         self.agent.status = TRANSPORT_SELECT_DEST
-        logger.debug("Transport {} in TransportSelectDestState".format(self.agent.name))
+        logger.info("Transport {} in TransportSelectDestState".format(self.agent.name))
 
     async def run(self):
         # If we have arrived here because of a rerouting, clear it
         if self.agent.check_rerouting():
+            logger.warning(f"Transport {self.agent.name} being rerouted. Resetting flag.")
             self.agent.clear_rerouting()
 
         next_destination = self.get_next_stop()
@@ -79,6 +94,7 @@ class SelectDestState(DRTransportStrategyBehaviour):
 
         # Just in case new location arrives exactly as the transport was going to move
         if not self.agent.check_rerouting():
+            logger.info(f"Transport {self.agent.name} in route to stop {next_destination}.")
             await self.move_to_next_stop(next_destination['coords'])
             self.set_next_state(TRANSPORT_MOVING_TO_DESTINATION)
         else:
@@ -97,14 +113,16 @@ class MovingToDestState(DRTransportStrategyBehaviour):
     async def on_start(self):
         await super().on_start()
         self.agent.status = TRANSPORT_MOVING_TO_DESTINATION
-        logger.debug("Transport {} in TransportMovingToDestState".format(self.agent.name))
+        logger.info("Transport {} in TransportMovingToDestState".format(self.agent.name))
 
     async def run(self):
         # Check if the transport needs to be immediately rerouted
         if self.agent.check_rerouting():
+            logger.warning(f"Transport {self.agent.name} requires immediate rerouting during movement.")
             return self.set_next_state(TRANSPORT_SELECT_DEST)
 
         if self.agent.is_in_destination():
+            logger.warning(f"Transport {self.agent.name} is already in its destination stop.")
             return self.set_next_state(TRANSPORT_WAITING)
         # Reset internal flag to False. Coroutines calling wait() will block until set() is called
         self.agent.transport_arrived_to_stop_event.clear()

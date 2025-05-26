@@ -1,4 +1,6 @@
 from asyncio.log import logger
+
+from demandResponsive.main.globals import SPEEDUP
 from simfleet.utils.helpers import AlreadyInDestination, PathRequestException, distance_in_meters, kmh_to_ms
 from spade.behaviour import PeriodicBehaviour
 from simfleet.utils.routing import chunk_path, request_path
@@ -68,7 +70,7 @@ class MovableMixin:
         self.set("duration", duration) # in seconds
         speed_ms = self.get("distance") / self.get("duration") # in meters/seconds
         speed_kmh = speed_ms * 3.6
-        self.set("speed_in_kmh", speed_kmh)
+        self.set("speed_in_kmh", speed_kmh * SPEEDUP)
         try:
             self.chunked_path = chunk_path(path, self.get("speed_in_kmh"))
         except Exception as e:

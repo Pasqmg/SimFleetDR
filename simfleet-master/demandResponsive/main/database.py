@@ -125,7 +125,7 @@ class Database:
         """
         Delete from the stops_dic any stop containing "current" in its id
         """
-        keep = [stop for stop in self.stops_dic.get("features") if not stop.get("id").contains("current")]
+        keep = [stop for stop in self.stops_dic.get("features") if not "current" in stop.get("id")]
         self.stops_dic["features"] = keep
 
     ################################################
@@ -160,8 +160,9 @@ class Database:
 
     async def get_route_from_server(self, origin_id, destination_id):
         # try to get route first, otherwise xd
-        origin_coords = get_stop_coords(origin_id)
-        destination_coords = get_stop_coords(destination_id)
+        origin_coords = self.get_stop_coords(origin_id)
+        destination_coords = self.get_stop_coords(destination_id)
+        logger.debug(f"Database asking for route from {origin_coords} to {destination_coords} to server")
         path, distance, duration = await request_route_to_server(origin_coords, destination_coords)
         if path is None or distance is None or duration is None:
             print(f"ERROR :: Server returned no route from {origin_id}{origin_coords} to "
@@ -317,8 +318,12 @@ class Database:
                 return customer
 
     def get_customer_issue_time(self, customer_id):
+        logger.debug(f"Database :: getting issue time of customer {customer_id}")
+        logger.debug(f"Database :: config_dic.get(customers): {self.config_dic.get('customers')}")
         for customer in self.config_dic.get('customers'):
+            logger.debug(f"Database :: customer is {customer}")
             if customer.get('name') == customer_id:
+                logger.debug(f"Database :: issue time is is {customer}")
                 return customer.get('issue_time')
 
     def get_customer_origin(self, customer_id):

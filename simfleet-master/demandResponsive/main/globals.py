@@ -49,7 +49,10 @@ STOPS_FILE = EXPERIMENT_PATH + 'dynamic_stops.json'
 # OSRM petition url
 ROUTE_HOST = "http://localhost:5000/"
 # Time-related globals
-MAXIMUM_WAITING_TIME_MINUTES = 20
+MAXIMUM_WAITING_TIME_MINUTES = 15
 SERVICE_MINUTES_PER_PASSENGER = 1
-TRAVEL_FACTOR = 2.5  # to compute maximum on-board time
+TRAVEL_FACTOR = 1.5  # to compute maximum on-board time
 SLACK_TIME_MINUTES = 5  # minutes of margin for the system to have flexibility
+
+# Speed factor
+SPEEDUP = 1.0  # factor to speed up the simulation, e.g., 2.0 means that the simulation runs twice as fast

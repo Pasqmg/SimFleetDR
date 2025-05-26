@@ -1,1 +1,15 @@
-{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"coordinates": [-0.385079, 39.469949]}, "id": "veh_01_02"}, {"type": "Feature", "geometry": {"coordinates": [-0.3750648017, 39.4554710301]}, "id": "request_001_1-origin-63"}, {"type": "Feature", "geometry": {"coordinates": [-0.394699, 39.48439]}, "id": "request_001_1-destination-63"}, {"type": "Feature", "geometry": {"coordinates": [-0.385079, 39.469949]}, "id": "veh_01@localhost-current-0"}]}
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [
+          -0.385079,
+          39.469949
+        ]
+      },
+      "id": "veh_01_02"
+    }
+  ]
+}

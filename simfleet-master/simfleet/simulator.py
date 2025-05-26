@@ -1409,11 +1409,11 @@ class CoordinationBehaviour(CyclicBehaviour):
     async def run(self):
 
         msg = await self.receive(timeout=5)
-        logger.warning(
-            "Agent[{}]: The agent has a mailbox size of ({})".format(
-                self.agent.name, self.mailbox_size()
-            )
-        )
+        # logger.warning(
+        #    "Agent[{}]: The agent has a mailbox size of ({})".format(
+        #        self.agent.name, self.mailbox_size()
+        #    )
+        # )
         if msg:
             performative = msg.get_metadata("performative")
             agent_id = msg.sender

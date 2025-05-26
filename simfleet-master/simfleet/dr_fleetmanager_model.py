@@ -26,6 +26,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         self.clear_positions()
         # TODO Hardcoded, must be adapted before running
         self.dynamic_config_path = CONFIG_PATH
+        self.config_dict = None
         self.dynamic_stops_path = STOPS_FILE
         # Scheduling
         self.known_customers = {} # customers already known by the manager
@@ -51,6 +52,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         logger.debug(f"Manager {self.agent_id} loading config")
         file = open(self.dynamic_config_path, 'r')
         config_dict = json.load(file)
+        self.config_dict = config_dict
         self.database.update_config(config_dict)
 
         # Load itineraries from config file
@@ -67,6 +69,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         # Get initial itineraries
         logger.debug(f"Manager {self.agent_id} getting initial itineraries from scheduler")
         self.modified_itineraries = self.scheduler.get_all_itineraries_as_stop_list()
+        logger.debug(f"Manager's initial itineraries {self.modified_itineraries}")
 
     def check_initial_itineraries_sent(self):
         return self.initial_itineraries_sent
@@ -78,10 +81,17 @@ class DRFleetManagerAgent(FleetManagerAgent):
         self.modified_itineraries = {}
 
     def get_modified_itinerary(self, agent_name):
+        logger.debug(f"Manager {self.agent_id} getting modified itinerary for {agent_name}")
         return self.modified_itineraries.get(agent_name)
 
     def add_database(self, database: Database):
         self.database = database
+
+    def get_expected_num_transports(self):
+        """
+        Returns the expected number of transports that must be registered to the FleetManager
+        """
+        return len(self.config_dict["transports"])
 
     def get_transport_agents(self):
         return self.get("transport_agents")
@@ -90,6 +100,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         return self.get("transport_positions")
 
     def set_transport_positions(self, transport_positions):
+        logger.debug(f"Manager {self.agent_id} setting transport positions: {transport_positions}")
         self.set("transport_positions", transport_positions)
 
     def pass_transport_positions(self):
@@ -99,6 +110,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         """
         Dict with entries "agent_name": position ([coords])
         """
+        logger.debug(f"Manager {self.agent_id} clearing transport positions")
         self.set("transport_positions", {})
 
     def add_customer(self, customer_dict):
@@ -263,10 +275,11 @@ class DRFleetManagerStrategyBehaviour(State):
         """
         logger.debug(f"Manager {self.agent.agent_id} sending updated itineraries to all transports")
         transports = self.agent.get_transport_agents()
+        logger.critical(f"Transport agents are {transports}")
         for agent_name in self.agent.modified_itineraries.keys():
-            await self.send_update_transport_itinerary(transports[agent_name]["jid"])
+            await self.send_update_transport_itinerary(agent_name, transports[agent_name]["jid"])
 
-    async def send_update_transport_itinerary(self, agent_name):
+    async def send_update_transport_itinerary(self, agent_name, agent_jid):
         """
         Sends a message to transport agent_name containing its new itinerary.
         """
@@ -275,12 +288,14 @@ class DRFleetManagerStrategyBehaviour(State):
         modified_itinerary = None
         try:
             modified_itinerary = self.agent.get_modified_itinerary(agent_name)
+            logger.debug(f"\t transport's{agent_name} modified itinerary is {modified_itinerary}")
         except AttributeError as e:
-            print(f"Transport {agent_name} has no modified itinerary; {e}")
+            logger.error(f"Transport {agent_name} has no modified itinerary; {e}")
         contents = {'new_itinerary' : modified_itinerary}
+        logger.debug(f"Manager is going to send {contents}")
         # Send message
         msg = Message()
-        msg.to = str(agent_name)
+        msg.to = str(agent_jid)
         msg.set_metadata("protocol", TRAVEL_PROTOCOL)
         msg.set_metadata("performative", REQUEST_PERFORMATIVE)
         msg.body = json.dumps(contents)

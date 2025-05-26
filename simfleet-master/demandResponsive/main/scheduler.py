@@ -120,6 +120,7 @@ class Scheduler:
                 'passenger_id': stop.passenger_id
             }
             tmp_list.append(tmp)
+        logger.debug(f"Scheduler getting itinerary of {vehicle_id} as stop list:{tmp_list}")
         # Extract coords
         # coords = [x.coords for x in stop_list]
         # Get coords of vehicle's current stop
@@ -128,9 +129,12 @@ class Scheduler:
         return tmp_list # {'stop_list': tmp_list, 'index': coords.index(current_coords)}
 
     def get_all_itineraries_as_stop_list(self):
+        logger.debug(f"Scheduler sending all itineraries as stop list")
         tmp_dict = {}
         for I in self.itineraries:
+            logger.debug(f"Scheduler processing itinerary {I.vehicle_id}")
             tmp_dict[I.vehicle_id] = self.get_itinerary_as_stop_list(I.vehicle_id)
+
         return tmp_dict
 
 
@@ -297,6 +301,7 @@ class Scheduler:
                                 # Create insertion object and store it in the list
                                 found = Insertion(itinerary=I, trip=request, index_Spu=index_Spu, index_Ssd=index_Ssd,
                                                   cost_increment=delta_ij)
+                                logger.debug(f"\t\t\t\t\t\tInsertion found: {found.to_string()}")
                                 feasible_insertions.append((found, delta_ij))
 
                                 # if delta_ij < minimum cost increment found so far, update minimum cost
@@ -319,7 +324,7 @@ class Scheduler:
                         break
             # end of filtered_stops_i for
         if verbose > 0:
-            logger.debug()
+            logger.debug("")
         return best_insertion, feasible_insertions
 
     def exhaustive_search(self, t, verbose=0):
