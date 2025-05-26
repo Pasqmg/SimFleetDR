@@ -220,11 +220,8 @@ class DRTransportAgent(TransportAgent):
         """
         logger.debug(f"Transport {self.agent_id} has arrived to stop with coords {self.get('curren_pos')}")
         self.update_current_stop()
-        logger.info(
-            "Transport {} arrived to stop {}".format(
-                self.agent_id, self.current_stop
-            )
-        )
+        logger.success(f"Transport {self.agent_id} arrived to stop "
+                       f"\n\t{self.current_stop}")
         # my_next_stop = self.itinerary[0]
         # if self.current_stop['coords'] == my_next_stop['coords']:
         #     logger.debug(f"Transport {self.agent_id} arrived to the correct next stop")
@@ -344,9 +341,11 @@ class TravelBehaviour(CyclicBehaviour):
                 if self.agent.itinerary is None:
                     # First time the transport receives the itinerary
                     self.agent.update_itinerary(new_itinerary)
+                    logger.success(f"Transport {self.agent.agent_id} received its first itinerary:\n\t{new_itinerary}")
                 else:
                     # The stop that was the next stop before the update of the itinerary
                     prev_next_stop = self.agent.update_itinerary(new_itinerary)
+                    logger.success(f"Transport {self.agent.agent_id} updated its itinerary:\n\t{new_itinerary}")
                     # If the next stop is no longer the same, we need rerouting
                     if not self.agent.compare_stops(prev_next_stop, self.agent.itinerary[self.agent.index_current_stop+1]):
                         logger.debug(f"Previous next stop changes after itinerary update:\n"

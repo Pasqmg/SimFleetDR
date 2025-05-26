@@ -44,7 +44,7 @@ class InDestState(DRTransportStrategyBehaviour):
         current_time = time.time() - self.agent.init_time
         logger.info(f"Transport {self.agent.name} in stop {self.agent.current_stop['stop_id']} "
                     f"[{self.agent.index_current_stop}/{len(self.agent.itinerary)-1}] "
-                    f"at time {current_time:.2f} (seconds)\n{self.agent.current_stop}")
+                    f"at time {current_time:.2f} (seconds)\n\t{self.agent.current_stop}")
         # If the next stop is the last one in the itinerary, wait at the current stop
         if self.agent.index_current_stop == len(self.agent.itinerary)-2:
             logger.warning(f"Transport {self.agent.name} is waiting at its penultimate stop.")
@@ -94,7 +94,8 @@ class SelectDestState(DRTransportStrategyBehaviour):
 
         # Just in case new location arrives exactly as the transport was going to move
         if not self.agent.check_rerouting():
-            logger.info(f"Transport {self.agent.name} in route to stop {next_destination}.")
+            logger.info(f"Transport {self.agent.name} in route to stop {next_destination['stop_id']}\n\t"
+                        f"{next_destination}.")
             await self.move_to_next_stop(next_destination['coords'])
             self.set_next_state(TRANSPORT_MOVING_TO_DESTINATION)
         else:

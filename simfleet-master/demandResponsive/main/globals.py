@@ -44,6 +44,10 @@ CONFIG_PATH = EXPERIMENT_PATH + "dynamic_config.json"
 ROUTES_FILE = EXPERIMENT_PATH + 'empty_routes.json'
 # Adjust to stops file name
 STOPS_FILE = EXPERIMENT_PATH + 'dynamic_stops.json'
+# Vehicle itineraries file
+VEHICLE_ITINERARIES = EXPERIMENT_PATH + 'vehicle_itineraries.json'
+# Customer itineraries file
+CUSTOMER_ITINERARIES = EXPERIMENT_PATH + 'customer_itineraries.json'
 
 # Demand-generation global variables, which affect the time window computation of each Stop within a Request
 # OSRM petition url

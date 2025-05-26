@@ -136,7 +136,7 @@ class SendUpdatedItineraries(DRFleetManagerStrategyBehaviour):
         logger.info(f"Manager {self.agent.agent_id} computing new itineraries...")
         await self.compute_new_itineraries(verbose=1)
         # Send updated itinerary to the corresponding transport
-        logger.info(f"\tManager {self.agent.agent_id} sending new itineraries")
+        logger.success(f"\tManager {self.agent.agent_id} sending new itineraries")
         await self.send_updated_itineraries()
         # TODO maybe await for OK from transports?
         # Go back to wait for requests

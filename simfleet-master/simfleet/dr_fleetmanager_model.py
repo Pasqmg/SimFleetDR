@@ -5,7 +5,7 @@ from spade.behaviour import State
 from spade.message import Message
 
 from demandResponsive.main.database import Database
-from demandResponsive.main.globals import CONFIG_PATH, STOPS_FILE
+from demandResponsive.main.globals import CONFIG_PATH, STOPS_FILE, VEHICLE_ITINERARIES, CUSTOMER_ITINERARIES
 from demandResponsive.main.launcher import itinerary_from_db
 from demandResponsive.main.request import Request
 from demandResponsive.main.scheduler import Scheduler
@@ -198,6 +198,36 @@ class DRFleetManagerAgent(FleetManagerAgent):
         # Once the scheduler finishes, we have new itineraries in
         # self.scheduler.itineraries. We can also extract the modified ones.
         self.modified_itineraries = self.scheduler.get_modified_itineraries()
+        logger.info(f"Manager {self.agent_id} writing itineraries")
+        self.write_vehicle_itineraries()
+        self.write_customer_itineraries()
+
+    def write_vehicle_itineraries(self):
+        """
+        Writes the itineraries in self.modified_itineraries to the file 'vehicle_itineraries.json'.
+        """
+        with open(VEHICLE_ITINERARIES, 'r') as f:
+            data = json.load(f)
+        keys_to_update = list(self.modified_itineraries.keys())
+        for key in keys_to_update:
+            data[key] = self.modified_itineraries[key]
+        with open(VEHICLE_ITINERARIES, 'w') as f:
+            json.dump(data, f, indent=4)
+        logger.debug(f"Vehicle itineraries written to {VEHICLE_ITINERARIES}")
+
+    def write_customer_itineraries(self):
+        """
+        Writes the customer itineraries to the file 'customer_itineraries.json'.
+        """
+        with open(CUSTOMER_ITINERARIES, 'r') as f:
+            data = json.load(f)
+        customers_to_update = [self.scheduler.get_passengers_of_itinerary(x) for x in self.modified_itineraries.keys()]
+        customers_to_update = [x for sublist in customers_to_update for x in sublist]
+        for passenger_id in customers_to_update:
+            data[passenger_id] = self.scheduler.get_passenger_trip_inside_itinerary(passenger_id)
+        with open(CUSTOMER_ITINERARIES, 'w') as f:
+            json.dump(data, f, indent=4)
+        logger.debug(f"Customer itineraries written to {CUSTOMER_ITINERARIES}")
 
 class DRFleetManagerStrategyBehaviour(State):
     """

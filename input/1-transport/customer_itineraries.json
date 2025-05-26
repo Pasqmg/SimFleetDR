@@ -1,0 +1,29 @@
+{
+    "request_001_1": [
+        {
+            "stop_id": "request_001_1-origin-63",
+            "coords": [
+                39.4554710301,
+                -0.3750648017
+            ],
+            "arrival_time": 66.065,
+            "service_time": 1,
+            "departure_time": 67.065,
+            "leg_time": 18.759999999999998,
+            "passenger_id": "request_001_1"
+        },
+        {
+            "stop_id": "request_001_1-destination-63",
+            "coords": [
+                39.48439,
+                -0.394699
+            ],
+            "arrival_time": 85.82499999999999,
+            "service_time": 1,
+            "departure_time": 86.82499999999999,
+            "leg_time": 15.695,
+            "passenger_id": "request_001_1"
+        }
+    ],
+    "null": null
+}

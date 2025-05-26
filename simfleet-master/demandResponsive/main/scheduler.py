@@ -11,6 +11,27 @@ from demandResponsive.main.itinerary import Itinerary
 from demandResponsive.main.stop import Stop
 
 
+def stop_list_to_json_list(stop_list):
+    """
+    Converts a list of Stop objects to a dictionary with stop_id as key and Stop attributes as values
+    :param stop_list: List[Stop]
+    :return: dict
+    """
+    tmp_list = []
+    for stop in stop_list:
+        tmp = {
+            'stop_id': stop.id,
+            'coords': stop.coords,
+            'arrival_time': stop.arrival_time,
+            'service_time': stop.service_time,
+            'departure_time': stop.departure_time,
+            'leg_time': stop.leg_time,
+            'passenger_id': stop.passenger_id
+        }
+        tmp_list.append(tmp)
+    return tmp_list
+
+
 class Scheduler:
     """
     Scheduler object. The Scheduler creates and solves a Demand-responsive problem instance,
@@ -100,33 +121,48 @@ class Scheduler:
             # Route from S to stop_to_insert
             await self.db.get_route_from_server(S.id, stop_to_insert.id)
 
+    def get_itinerary_by_vehicle_id(self, vehicle_id):
+        """
+        Returns the itinerary of the vehicle with id = vehicle_id
+        :param vehicle_id: str
+        :return: Itinerary object
+        """
+        # Get itinerary with id = vehicle_id
+        itinerary = [x for x in self.itineraries if x.vehicle_id == vehicle_id]
+        if len(itinerary) == 0:
+            logger.error(f"Scheduler could not find itinerary for vehicle {vehicle_id}")
+            return None
+        return itinerary[0]
+
     def get_itinerary_as_stop_list(self, vehicle_id):
         """
         Returns an ordered list of the stops in vehicle_id's stop_list
         """
         # Get itinerary with id = vehicle_id
-        itinerary = [x for x in self.itineraries if x.vehicle_id == vehicle_id]
+        itinerary = self.get_itinerary_by_vehicle_id(vehicle_id)
         # Extract stop_list
-        stop_list = itinerary[0].stop_list
-        # Extract stop data
-        tmp_list = []
-        for stop in stop_list:
-            tmp = {
-                'stop_id': stop.id,
-                'coords': stop.coords,
-                'arrival_time': stop.arrival_time,
-                'service_time': stop.service_time,
-                'departure_time': stop.departure_time,
-                'passenger_id': stop.passenger_id
-            }
-            tmp_list.append(tmp)
+        stop_list = itinerary.stop_list
+        tmp_list = stop_list_to_json_list(stop_list)
         logger.debug(f"Scheduler getting itinerary of {vehicle_id} as stop list:{tmp_list}")
+        return tmp_list
+        # Extract stop data
+        # tmp_list = []
+        # for stop in stop_list:
+        #     tmp = {
+        #         'stop_id': stop.id,
+        #         'coords': stop.coords,
+        #         'arrival_time': stop.arrival_time,
+        #         'service_time': stop.service_time,
+        #         'departure_time': stop.departure_time,
+        #         'passenger_id': stop.passenger_id
+        #     }
+        #     tmp_list.append(tmp)
         # Extract coords
         # coords = [x.coords for x in stop_list]
         # Get coords of vehicle's current stop
         # current_coords = itinerary[0].current_loc.coords
         # Return coords list, vehicle's current index within list
-        return tmp_list # {'stop_list': tmp_list, 'index': coords.index(current_coords)}
+        # return tmp_list # {'stop_list': tmp_list, 'index': coords.index(current_coords)}
 
     def get_all_itineraries_as_stop_list(self):
         logger.debug(f"Scheduler sending all itineraries as stop list")
@@ -134,8 +170,77 @@ class Scheduler:
         for I in self.itineraries:
             logger.debug(f"Scheduler processing itinerary {I.vehicle_id}")
             tmp_dict[I.vehicle_id] = self.get_itinerary_as_stop_list(I.vehicle_id)
-
         return tmp_dict
+
+    def get_itinerary_by_passenger_id(self, passenger_id):
+        """
+        """
+        # Check whether a request with the given passenger_id is scheduled
+        filtered_scheduled_requests = [x for x in self.scheduled_requests if x.passenger_id == passenger_id]
+        if len(filtered_scheduled_requests) == 0:
+            logger.error(f"There is no request scheduled with passenger_id {passenger_id}")
+            return None
+        if len(filtered_scheduled_requests) > 1:
+            logger.error(f"There are multiple requests scheduled with passenger_id {passenger_id}")
+            return None
+        # Search for an insertion with t.passenger_id as passenger_id in the itinerary_insertion_dic
+        for vehicle_id in self.itinerary_insertion_dic.keys():
+            insertions = self.itinerary_insertion_dic[vehicle_id]
+            for insertion in insertions:
+                if insertion.t.passenger_id == passenger_id:
+                    # Return the itinerary of the insertion
+                    return self.get_itinerary_by_vehicle_id(vehicle_id)
+        return None
+
+    def get_passenger_trip_inside_itinerary(self, passenger_id):
+        """
+        Returns the trip of the passenger with passenger_id inside the itinerary
+        :param passenger_id: str
+        :return: Trip object or None if not found
+        """
+        # Get itinerary by passenger_id
+        I = self.get_itinerary_by_passenger_id(passenger_id)
+        if I is None:
+            return None
+        # Search for the passenger's origin stop in the itinerary's stop_list
+        for i, stop in enumerate(I.stop_list):
+            if stop.passenger_id == passenger_id and "origin" in stop.id:
+                origin_index = i
+                # origin_stop = stop
+            if stop.passenger_id == passenger_id and "destination" in stop.id:
+                destination_index = i
+                # destination_stop = stop
+                break
+        if origin_index is None or destination_index is None:
+            logger.error(f"Could not find origin or destination stop for passenger {passenger_id} "
+                         f"in itinerary {I.vehicle_id}")
+            return None
+        elif origin_index > destination_index:
+            logger.error(f"Origin stop for passenger {passenger_id} is after destination stop in itinerary "
+                         f"{I.vehicle_id}: origin_index={origin_index} > destination_index={destination_index}")
+            return None
+        filtered_stop_list = I.stop_list[origin_index:destination_index + 1]
+        tmp_list = stop_list_to_json_list(filtered_stop_list)
+        return tmp_list
+
+    def get_passengers_of_itinerary(self, vehicle_id):
+        """
+        Returns a list of passengers in the itinerary of the vehicle with id = vehicle_id
+        :param vehicle_id: str
+        :return: List[str] of passenger_ids
+        """
+        # Get itinerary with id = vehicle_id
+        itinerary = self.get_itinerary_by_vehicle_id(vehicle_id)
+        if itinerary is None:
+            return []
+        # Extract stop_list
+        stop_list = itinerary.stop_list
+        # Extract passenger_ids from stop_list
+        passenger_ids = [stop.passenger_id for stop in stop_list]
+        passenger_ids = [x for x in passenger_ids if x is not None]
+        if len(passenger_ids) == 0:
+            return []
+        return list(set(passenger_ids)) # Return unique passenger_ids
 
 
     ################################################
@@ -470,6 +575,8 @@ class Scheduler:
         # Add insertion to the itinerary_insertion_dic of the Scheduler
         vehicle_id = insertion.I.vehicle_id
         passenger_id = insertion.t.passenger_id
+        if self.itinerary_insertion_dic[vehicle_id] is None:
+            self.itinerary_insertion_dic[vehicle_id] = []
         self.itinerary_insertion_dic[vehicle_id].append(insertion)
 
         # Extract Request attributes
