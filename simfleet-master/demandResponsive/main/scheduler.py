@@ -115,7 +115,16 @@ class Scheduler:
         :param stop_to_insert: Stop
         :param stop_list: List[Stop]
         """
+        self.db.reload_stops()
+        logger.debug(f"Scheduler requesting routes for insertion of {stop_to_insert.id} "
+                     f"between {[x.id for x in stop_list]}")
+        if stop_to_insert is None:
+            logger.error(f"Scheduler received None as stop_to_insert: {stop_to_insert}")
+            return
         for S in stop_list:
+            if S is None:
+                logger.error(f"Scheduler received None as stop in stop_list: {stop_list}")
+                return
             # Route from stop_to_insert to S
             await self.db.get_route_from_server(stop_to_insert.id, S.id)
             # Route from S to stop_to_insert
@@ -203,6 +212,8 @@ class Scheduler:
         if I is None:
             return None
         # Search for the passenger's origin stop in the itinerary's stop_list
+        origin_index = None
+        destination_index = None
         for i, stop in enumerate(I.stop_list):
             if stop.passenger_id == passenger_id and "origin" in stop.id:
                 origin_index = i
@@ -295,6 +306,8 @@ class Scheduler:
             index_current = 0  # Index of the node where the vehicle is at the emission time of the request
             status = ""
             if len(dummy_itinerary.stop_list) > 2:  # Non empty route
+                logger.debug(f"Vehicle {I.vehicle_id} has a non-empty route (more than 2 stops): "
+                             f"{[x.id for x in dummy_itinerary.stop_list]}")
                 index_current, status = I.get_vehicle_position_at_time(issue_time)
                 if verbose>0:
                     logger.debug(f"Vehicle {I.vehicle_id} is {status} num. {index_current} at time {issue_time}")
@@ -311,14 +324,20 @@ class Scheduler:
             # to do so, we need a 'fake' stop representing the vehicle's current position
             if index_current > 0 and status == "travelling_to_stop":
                 if verbose>0:
+                    logger.debug(f"Vehicle {I.vehicle_id} is travelling to stop with index {index_current}:"
+                                 f" {dummy_itinerary.stop_list[index_current].id} ")
                     logger.debug(f"Adding vehicle {I.vehicle_id} current position as a stop in dummy itinerary")
                 # Create fake stop located at vehicle's current position
                 current_stop = self.create_current_stop(I.vehicle_id, issue_time)
+                if current_stop is None:
+                    logger.error(f"Scheduler could not create current stop for vehicle {I.vehicle_id} "
+                                 f"at time {issue_time}")
                 # Compute route between prev, current and next stops (prev and next stop should be in the db)
-                await self.request_routes_to_server(current_stop, [
-                    dummy_itinerary.stop_list[index_current-1],
-                    dummy_itinerary.stop_list[index_current]
-                ])
+                # await self.request_routes_to_server(current_stop, [
+                #     dummy_itinerary.stop_list[index_current-1],
+                #     dummy_itinerary.stop_list[index_current]
+                # ])
+                await self.request_routes_to_server(current_stop, dummy_itinerary.stop_list)
                 # Now that we have the route, we can insert the vehicle's current position as a new stop
                 dummy_itinerary.insert_stop(S=current_stop, index_S=index_current, npass=0)
 
@@ -328,15 +347,22 @@ class Scheduler:
             previous_to_Spu = [new_stop_from_stop(x) for x in filtered_stops_i if x.eat < Spu.latest]
             if verbose > 0:
                 logger.debug(f"\tSearching in {len(previous_to_Spu)} nodes")
+                logger.debug(f"\tComputing routes for pickup stop {Spu.id} insertion")
             # Request all routes to test Spu insertion
-            await self.request_routes_to_server(Spu, previous_to_Spu)
+            # DEBUG
+            # await self.request_routes_to_server(Spu, previous_to_Spu)
+            await self.request_routes_to_server(Spu, filtered_stops_i)
             if verbose > 0:
                 logger.debug(f"\tAll necessary routes for pickup stop {Spu.id}'s insertion have been computed")
+                logger.debug(f"\tComputing routes for setdown stop {Ssd.id} insertion")
 
             # from filtered_stops_i, keep only those whose EAT is lower than Ssd.latest
             previous_to_Ssd = [new_stop_from_stop(x) for x in filtered_stops_i if x.eat < Ssd.latest]
             # Request all routes to test Ssd insertion
-            await self.request_routes_to_server(Ssd, previous_to_Ssd)
+            # await self.request_routes_to_server(Ssd, previous_to_Ssd)
+            await self.request_routes_to_server(Ssd, filtered_stops_i)
+            if verbose > 0:
+                logger.debug(f"\tAll necessary routes for setdown stop {Ssd.id}'s insertion have been computed")
 
             # at this point, the scheduler is ready to assess the request's insertion in itinerary I
             for index_stop_i in range(len(filtered_stops_i) - 1):
@@ -699,7 +725,7 @@ class Scheduler:
                 self.rejected_requests.append(request)
                 local_rejected_requests.append(request.passenger_id)
         if verbose > 0:
-            logger.debug(f"All requests have been processed {len(self.pending_requests)} new requests")
+            logger.debug(f"All requests have been processed ({len(self.pending_requests)} new requests)")
         return True, local_rejected_requests
 
     def schedule_all_requests_by_minimal_cost(self, verbose=0):

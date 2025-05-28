@@ -26,7 +26,7 @@ class WaitForRequestsState(DRFleetManagerStrategyBehaviour):
             self.agent.init_time = time.time()
         self.agent.status = MANAGER_WAITING
         logger.info(f"Manager {self.agent.agent_id} in WaitForRequestsState at time "
-                    f"{time.time()-self.agent.init_time:.2f} (seconds)")
+                    f"{(time.time()-self.agent.init_time)/60:.2f} (minutes)")
 
     async def run(self):
         # For the first execution
@@ -45,10 +45,12 @@ class WaitForRequestsState(DRFleetManagerStrategyBehaviour):
             return self.set_next_state(MANAGER_WAITING)
 
         # Usual behaviour, load requests file, check for new requests
-        new_request = self.check_for_requests()
+        new_customers = self.check_for_requests()
         # If new requests, ask current transport positions, go to wait for reply
-        if new_request:
-            logger.info(f"Manager {self.agent.agent_id} has new requests")
+        if len(new_customers) > 0:
+            logger.info(f"Manager {self.agent.agent_id} has {len(new_customers)}:")
+            for customer in new_customers:
+                logger.info(f"\t{customer['name']}")
             # Clear dict of transport positions
             self.agent.clear_positions()
             # Send message to all transports
@@ -58,7 +60,7 @@ class WaitForRequestsState(DRFleetManagerStrategyBehaviour):
         else:
             logger.info(
                 f"Manager {self.agent.agent_id} does not have new requests")
-            await asyncio.sleep(30)
+            await asyncio.sleep(10)
             return self.set_next_state(MANAGER_WAITING)
 
 class RequestTransportPositionsState(DRFleetManagerStrategyBehaviour):
@@ -108,7 +110,7 @@ class RequestTransportPositionsState(DRFleetManagerStrategyBehaviour):
 
                         # TODO self.agent.check_if_stop_exists(sender_position) before creating it
                         # Add sender position as a new database stop
-                        self.agent.create_and_add_transport_stop(vehicle_id=msg.sender,
+                        self.agent.create_and_add_transport_stop(vehicle_id=msg.sender.node,
                                                                  current_time=time.time() - self.agent.init_time,
                                                                  coords=sender_position)
                     else:
@@ -134,9 +136,10 @@ class SendUpdatedItineraries(DRFleetManagerStrategyBehaviour):
         self.agent.pass_transport_positions()
         # Compute new itineraries
         logger.info(f"Manager {self.agent.agent_id} computing new itineraries...")
+        t1 = time.time()
         await self.compute_new_itineraries(verbose=1)
         # Send updated itinerary to the corresponding transport
-        logger.success(f"\tManager {self.agent.agent_id} sending new itineraries")
+        logger.success(f"({time.time()-t1:.2f} s)\tManager {self.agent.agent_id} sending new itineraries")
         await self.send_updated_itineraries()
         # TODO maybe await for OK from transports?
         # Go back to wait for requests

@@ -1,0 +1,68 @@
+{
+    "fleets": [
+        {
+          "class": "simfleet.dr_fleetmanager_model.DRFleetManagerAgent",
+          "password": "secret",
+          "name": "DRManager",
+          "fleet_type": "dr"
+        }
+    ],
+  "transports": [
+    {
+      "class": "simfleet.dr_transport_model.DRTransportAgent",
+      "position": [
+        39.469949,
+        -0.385079
+      ],
+      "capacity": 8,
+      "delay": 0,
+      "password": "secret",
+      "speed": 70,
+      "fleet_type": "dr",
+      "optional": {
+        "fleet": "DRManager@localhost"
+      },
+      "name": "veh_01"
+    },
+    {
+      "class": "simfleet.dr_transport_model.DRTransportAgent",
+      "position": [
+        39.521908,
+        -0.357658
+      ],
+      "capacity": 8,
+      "delay": 0,
+      "password": "secret",
+      "speed": 70,
+      "fleet_type": "dr",
+      "optional": {
+        "fleet": "DRManager@localhost"
+      },
+      "name": "veh_03"
+    },
+    {
+      "class": "simfleet.dr_transport_model.DRTransportAgent",
+      "position": [
+        39.4464599991,
+        -0.326572
+      ],
+      "capacity": 8,
+      "delay": 0,
+      "password": "secret",
+      "speed": 70,
+      "fleet_type": "dr",
+      "optional": {
+                "fleet": "DRManager@localhost"
+      },
+      "name": "veh_05"
+    }
+    ],
+    "customers": [],
+    "simulation_name": "3-transports_DR",
+    "max_time": 10000,
+    "transport_strategy": "simfleet.dr_transport_strategy.FSMDRTransportStrategyBehaviour",
+    "fleetmanager_strategy": "simfleet.dr_fleetmanager_strategy.FSMDRFleetManagerStrategyBehaviour",
+    "host": "localhost",
+    "http_port": 9000,
+    "http_ip": "localhost"
+}

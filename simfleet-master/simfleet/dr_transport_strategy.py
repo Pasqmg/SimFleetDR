@@ -42,9 +42,10 @@ class InDestState(DRTransportStrategyBehaviour):
         # Set/update agent current stop
         self.agent.setup_current_stop()
         current_time = time.time() - self.agent.init_time
+        current_time_minutes = current_time / 60
         logger.info(f"Transport {self.agent.name} in stop {self.agent.current_stop['stop_id']} "
                     f"[{self.agent.index_current_stop}/{len(self.agent.itinerary)-1}] "
-                    f"at time {current_time:.2f} (seconds)\n\t{self.agent.current_stop}")
+                    f"at time {current_time_minutes:.2f} (minutes)\n\t{self.agent.current_stop}")
         # If the next stop is the last one in the itinerary, wait at the current stop
         if self.agent.index_current_stop == len(self.agent.itinerary)-2:
             logger.warning(f"Transport {self.agent.name} is waiting at its penultimate stop.")
@@ -59,13 +60,13 @@ class InDestState(DRTransportStrategyBehaviour):
             return self.set_next_state(TRANSPORT_SELECT_DEST)
 
         # According to the elapsed time, the transport departs the current stop or waits in it
-        if current_time >= self.agent.current_stop['departure_time'] :
+        if current_time_minutes >= self.agent.current_stop['departure_time'] :
             return self.set_next_state(TRANSPORT_SELECT_DEST)
         else:
             # if the transport must wait, do so for 30 seconds
             # (the transport may receive a message from the fleet manager)
             logger.info(f"Transport {self.agent.name} waiting for departure at time "
-                        f"{self.agent.current_stop['departure_time']:.2f}")
+                        f"{self.agent.current_stop['departure_time']:.2f} (minutes)")
             await asyncio.sleep(5)
             return self.set_next_state(TRANSPORT_WAITING)
 

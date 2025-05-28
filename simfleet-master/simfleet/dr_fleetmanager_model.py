@@ -153,17 +153,23 @@ class DRFleetManagerAgent(FleetManagerAgent):
         # Read file
         file = open(self.dynamic_stops_path, 'r')
         stops_dict = json.load(file)
+        # Chech if stop_dic["features"] has any stop with id == to new_stop["id"]
+        for stop in stops_dict["features"]:
+            if stop["id"] == new_stop["id"]:
+                logger.debug(f"Stop with id {new_stop['id']} already exists, removing it")
+                stops_dict["features"].remove(stop)
+                break
         # Update JSON
         stops_dict["features"].append(new_stop)
         # Save file
         file = open(self.dynamic_stops_path, 'w')
-        json.dump(stops_dict, file)
+        json.dump(stops_dict, file, indent=4)
 
     def create_and_add_stop(self, customer_name, type, issue_time, coords):
         logger.debug(f"Manager {self.agent_id} creating stop for customer {customer_name}, type {type}, "
                      f"issue time {issue_time}, coords {coords}")
         inverted_coords = [coords[1], coords[0]]
-        logger.warning(f"Stops are created inverting coordinates: {coords} --> {inverted_coords}")
+        logger.debug(f"Stops are created inverting coordinates: {coords} --> {inverted_coords}")
         stop =  {
             "type": "Feature",
             "geometry": {
@@ -171,7 +177,7 @@ class DRFleetManagerAgent(FleetManagerAgent):
         }, "id": str(customer_name)+"-"+str(type)+"-"+str(issue_time)}
         # Add stop to dynamic_stops file
         self.load_and_update_dynamic_stops(stop) # TODO may be unnecessary, may be costly
-        self.database.add_stop(stop)
+        self.scheduler.db.add_stop(stop)
 
     def create_and_add_transport_stop(self, vehicle_id, current_time, coords):
         logger.debug(f"Manager {self.agent_id} creating stop for transport {vehicle_id}, current_time {current_time}"
@@ -193,8 +199,8 @@ class DRFleetManagerAgent(FleetManagerAgent):
         logger.debug(f"Manager {self.agent_id} began scheduling new requests...")
         self.clear_modified_itineraries()
         end, rejected = await self.scheduler.schedule_new_requests(verbose=verbose)
-        if len(rejected) > 0:
-            pass
+        for request in rejected:
+            logger.critical(f"Request {request} could not be scheduled")
         # Once the scheduler finishes, we have new itineraries in
         # self.scheduler.itineraries. We can also extract the modified ones.
         self.modified_itineraries = self.scheduler.get_modified_itineraries()
@@ -239,7 +245,7 @@ class DRFleetManagerStrategyBehaviour(State):
         """
         logger.debug("Strategy {} started in manager".format(type(self).__name__))
 
-    def check_for_requests(self) -> bool:
+    def check_for_requests(self):
         logger.debug(f"Manager {self.agent.agent_id} checking if new requests appeared...")
         # Load customers from dynamic_config
         file = open(self.agent.dynamic_config_path, "r")
@@ -247,7 +253,7 @@ class DRFleetManagerStrategyBehaviour(State):
         current_customers = dynamic_config.get("customers")
         # Compare those customers with known customers
         new_customers = [x for x in current_customers if x['name'] not in self.agent.known_customers.keys()]
-        if new_customers:
+        if len(new_customers) > 0:
             logger.debug(f"\t there are {len(new_customers)} new request(s)")
             # Crate customer's stops and add them to dynamic stops and the database stops
             for new_customer in new_customers:
@@ -264,8 +270,8 @@ class DRFleetManagerStrategyBehaviour(State):
                 new_request = self.agent.create_request_from_customer(new_customer["name"])
                 # Add new customer to scheduler.pending_requests
                 self.agent.add_request_to_scheduler(new_request)
-            return True
-        return False
+            return new_customers
+        return []
 
     async def ask_transport_positions(self):
         """
@@ -305,7 +311,7 @@ class DRFleetManagerStrategyBehaviour(State):
         """
         logger.debug(f"Manager {self.agent.agent_id} sending updated itineraries to all transports")
         transports = self.agent.get_transport_agents()
-        logger.critical(f"Transport agents are {transports}")
+        logger.debug(f"Transport agents are {transports}")
         for agent_name in self.agent.modified_itineraries.keys():
             await self.send_update_transport_itinerary(agent_name, transports[agent_name]["jid"])
 

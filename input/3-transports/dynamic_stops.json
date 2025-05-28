@@ -1,0 +1,35 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [
+                    -0.385079,
+                    39.469949
+                ]
+            },
+            "id": "veh_01_02"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [
+                    -0.357658,
+                    39.521908
+                ]
+            },
+            "id": "veh_03_04"
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "coordinates": [
+                    -0.326572,
+                    39.4464599991
+                ]
+            },
+            "id": "veh_05_06"
+        }
+    ]
+}

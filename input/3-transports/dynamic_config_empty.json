@@ -1,0 +1,58 @@
+{
+  "fleets": [],
+  "transports": [
+    {
+      "position": [
+        39.469949,
+        -0.385079
+      ],
+      "destination": [
+        39.469949,
+        -0.385079
+      ],
+      "capacity": 8,
+      "start_time": 0,
+      "end_time": 420,
+      "password": "secret",
+      "speed": 70,
+      "fleet_type": "dr",
+      "name": "veh_01"
+    },
+    {
+      "position": [
+        39.521908,
+        -0.357658
+      ],
+      "destination": [
+        39.521908,
+        -0.357658
+      ],
+      "capacity": 8,
+      "start_time": 0,
+      "end_time": 420,
+      "password": "secret",
+      "speed": 70,
+      "fleet_type": "dr",
+      "name": "veh_03"
+    },
+    {
+      "position": [
+        39.4464599991,
+        -0.326572
+      ],
+      "destination": [
+        39.4464599991,
+        -0.326572
+      ],
+      "capacity": 8,
+      "start_time": 0,
+      "end_time": 420,
+      "password": "secret",
+      "speed": 70,
+      "fleet_type": "dr",
+      "name": "veh_05"
+    }
+  ],
+  "customers": [
+  ]
+}

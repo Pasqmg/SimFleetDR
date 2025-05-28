@@ -82,6 +82,17 @@ class Database:
     def update_config(self, config_dict):
         self.config_dic = config_dict
 
+    def reload_stops(self):
+        """
+        Reloads the stops_dic from the STOPS_FILE
+        """
+        try:
+            logger.debug(f"Databae :: Reloading STOPS_FILE from {STOPS_FILE}")
+            file = open(STOPS_FILE, "r")
+            self.stops_dic = json.load(file)
+        except Exception as e:
+            logger.error(str(e))
+
     ################################################
     ########## Stop consultation methods ###########
     ################################################
@@ -104,7 +115,9 @@ class Database:
         """
         Adds the information of a stop to self.stops_dic
         """
+        logger.debug(f"Database adding stop {stop_dict}")
         self.stops_dic["features"].append(stop_dict)
+        # logger.debug(f"Stops_dic after adding: {self.stops_dic}")
 
     def get_stop_id(self, coords):
         """
@@ -142,6 +155,14 @@ class Database:
         p2 = (destination_coords[1], destination_coords[0])
         return p1, p2
 
+    def points_to_ids(self, p1, p2):
+        logger.debug(f"Database :: points_to_ids: {p1}, {p2}")
+        origin_coords = [p1[0], p1[1]]
+        destination_coords = [p2[0], p2[1]]
+        origin_id = self.get_stop_id(origin_coords)
+        destination_id = self.get_stop_id(destination_coords)
+        return origin_id, destination_id
+
     def get_route(self, p1, p2):
         """
         Returns the route connecting stop coordinates p1 and p2
@@ -155,36 +176,60 @@ class Database:
         if route is None:
             # Future refinement: ask OSRM for the route
             logger.critical(f"ERROR :: There is no route for key {key} in the routes_dic")
-            exit()
+            for key in self.routes_dic.keys():
+                logger.error(f"\t{key}")
+            origin_id, destination_id = self.points_to_ids(p1, p2)
+            logger.critical(f"Ask server for route from {origin_id} to {destination_id}")
+            # await self.get_route_from_server(origin_id, destination_id)
+            # route = self.routes_dic.get(key)
+            # if route is None:
+            #     logger.critical(f"ERROR :: There is no route for key {key} in the routes_dic after asking server")
+            #     exit()
         return route
 
     async def get_route_from_server(self, origin_id, destination_id):
         # try to get route first, otherwise xd
         origin_coords = self.get_stop_coords(origin_id)
         destination_coords = self.get_stop_coords(destination_id)
-        logger.debug(f"Database asking for route from {origin_coords} to {destination_coords} to server")
+        if origin_coords is None:
+            logger.error(f"ERROR :: No coordinates for origin stop {origin_id}")
+            logger.error(f"self.stops_dic: {self.stops_dic}")
+            exit()
+        if destination_id is None:
+            logger.error(f"ERROR :: No destination stop {destination_id}")
+            exit()
+        p1, p2 = self.ids_to_points(origin_id, destination_id)
+        logger.debug(f"Database asking for route from {origin_id} to {destination_id} to server: "
+                     f"from {p1} to {p2}")
         path, distance, duration = await request_route_to_server(origin_coords, destination_coords)
+        # logger.debug(f"Server returned path: {path}, distance: {distance}, duration: {duration}")
         if path is None or distance is None or duration is None:
-            print(f"ERROR :: Server returned no route from {origin_id}{origin_coords} to "
+            logger.error(f"ERROR :: Server returned no route from {origin_id}{origin_coords} to "
                   f"{destination_id}{destination_coords}")
             exit()
 
         # If route is well formatted, store
-        if path and distance and duration:
+        if path:
             p1, p2 = self.ids_to_points(origin_id, destination_id)
             key = str(p1) + ":" + str(p2)
+            logger.debug(f"Database updating routes_dic with key {key}")
             self.routes_dic[key] = {"path": path, "distance": distance, "duration": duration}
+            # logger.debug(f"Database routes_dic after update:")
+            for key in self.routes_dic.keys():
+                logger.debug(f"\t{key}")
 
     def get_geodesic_distance_km(self, origin_id, destination_id):
         p1, p2 = self.ids_to_points(origin_id, destination_id)
         return geopy.distance.distance(p1, p2).km
 
     def get_route_distance_km(self, origin_id, destination_id):
+        logger.debug(f"Database :: getting route distance from {origin_id} to {destination_id}")
         p1, p2 = self.ids_to_points(origin_id, destination_id)
         route = self.get_route(p1, p2)
         return route.get("distance") / 1000
 
     def get_route_time_min(self, origin_id, destination_id):
+        logger.debug(f"Database :: getting route time from {origin_id} to {destination_id}")
         p1, p2 = self.ids_to_points(origin_id, destination_id)
         route = self.get_route(p1, p2)
         return route.get("duration") / 60
