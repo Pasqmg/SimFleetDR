@@ -1,5 +1,6 @@
 import json
 
+import requests
 from loguru import logger
 from spade.behaviour import State
 from spade.message import Message
@@ -231,6 +232,9 @@ class DRFleetManagerAgent(FleetManagerAgent):
         customers_to_update = [x for sublist in customers_to_update for x in sublist]
         for passenger_id in customers_to_update:
             data[passenger_id] = self.scheduler.get_passenger_trip_inside_itinerary(passenger_id)
+        # Update rejected customers
+        for request in self.scheduler.rejected_requests:
+            data[request.passenger_id] = []
         with open(CUSTOMER_ITINERARIES, 'w') as f:
             json.dump(data, f, indent=4)
         logger.debug(f"Customer itineraries written to {CUSTOMER_ITINERARIES}")
@@ -336,3 +340,23 @@ class DRFleetManagerStrategyBehaviour(State):
         msg.set_metadata("performative", REQUEST_PERFORMATIVE)
         msg.body = json.dumps(contents)
         await self.send(msg)
+
+    def post_itineraries(self):
+        logger.info(f"Manager {self.agent.agent_id} posting itineraries to the API")
+        vehicle_itineraries = None
+        customer_itineraries = None
+        with open(VEHICLE_ITINERARIES, 'r') as f:
+            vehicle_itineraries = json.load(f)
+        with open(CUSTOMER_ITINERARIES, 'r') as f:
+            customer_itineraries = json.load(f)
+
+        send_data = {
+            "customer_itineraries": customer_itineraries,
+            "vehicle_itineraries": vehicle_itineraries
+        }
+
+        response = requests.post(f"http://localhost:5000/api/complete_trip_result", json=send_data)
+        if response is not None:
+            logger.debug(f"Response from API: {response.status_code} - {response.text}")
+        else:
+            logger.debug("Response from API: None")

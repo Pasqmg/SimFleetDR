@@ -142,6 +142,8 @@ class SendUpdatedItineraries(DRFleetManagerStrategyBehaviour):
         logger.success(f"({time.time()-t1:.2f} s)\tManager {self.agent.agent_id} sending new itineraries")
         await self.send_updated_itineraries()
         # TODO maybe await for OK from transports?
+        # POST itineraries to the API
+        self.post_itineraries()
         # Go back to wait for requests
         return self.set_next_state(MANAGER_WAITING)
 

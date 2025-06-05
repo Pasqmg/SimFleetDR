@@ -11,7 +11,7 @@ from demandResponsive.main.itinerary import Itinerary
 from demandResponsive.main.stop import Stop
 
 
-def stop_list_to_json_list(stop_list):
+def stop_list_to_json_list(stop_list, vehicle_id=None):
     """
     Converts a list of Stop objects to a dictionary with stop_id as key and Stop attributes as values
     :param stop_list: List[Stop]
@@ -19,14 +19,18 @@ def stop_list_to_json_list(stop_list):
     """
     tmp_list = []
     for stop in stop_list:
+        departure_time = stop.departure_time
+        if departure_time == math.inf:
+            departure_time = 99999999
         tmp = {
             'stop_id': stop.id,
             'coords': stop.coords,
             'arrival_time': stop.arrival_time,
             'service_time': stop.service_time,
-            'departure_time': stop.departure_time,
+            'departure_time': departure_time,
             'leg_time': stop.leg_time,
-            'passenger_id': stop.passenger_id
+            'passenger_id': stop.passenger_id,
+            'vehicle_id': vehicle_id
         }
         tmp_list.append(tmp)
     return tmp_list
@@ -151,7 +155,7 @@ class Scheduler:
         itinerary = self.get_itinerary_by_vehicle_id(vehicle_id)
         # Extract stop_list
         stop_list = itinerary.stop_list
-        tmp_list = stop_list_to_json_list(stop_list)
+        tmp_list = stop_list_to_json_list(stop_list, vehicle_id)
         logger.debug(f"Scheduler getting itinerary of {vehicle_id} as stop list:{tmp_list}")
         return tmp_list
         # Extract stop data
@@ -231,7 +235,7 @@ class Scheduler:
                          f"{I.vehicle_id}: origin_index={origin_index} > destination_index={destination_index}")
             return None
         filtered_stop_list = I.stop_list[origin_index:destination_index + 1]
-        tmp_list = stop_list_to_json_list(filtered_stop_list)
+        tmp_list = stop_list_to_json_list(filtered_stop_list, I.vehicle_id)
         return tmp_list
 
     def get_passengers_of_itinerary(self, vehicle_id):
@@ -333,11 +337,11 @@ class Scheduler:
                     logger.error(f"Scheduler could not create current stop for vehicle {I.vehicle_id} "
                                  f"at time {issue_time}")
                 # Compute route between prev, current and next stops (prev and next stop should be in the db)
-                # await self.request_routes_to_server(current_stop, [
-                #     dummy_itinerary.stop_list[index_current-1],
-                #     dummy_itinerary.stop_list[index_current]
-                # ])
-                await self.request_routes_to_server(current_stop, dummy_itinerary.stop_list)
+                await self.request_routes_to_server(current_stop, [
+                    dummy_itinerary.stop_list[index_current-1],
+                    dummy_itinerary.stop_list[index_current]
+                ])
+                # DEBUG await self.request_routes_to_server(current_stop, dummy_itinerary.stop_list)
                 # Now that we have the route, we can insert the vehicle's current position as a new stop
                 dummy_itinerary.insert_stop(S=current_stop, index_S=index_current, npass=0)
 
@@ -348,9 +352,9 @@ class Scheduler:
             if verbose > 0:
                 logger.debug(f"\tSearching in {len(previous_to_Spu)} nodes")
                 logger.debug(f"\tComputing routes for pickup stop {Spu.id} insertion")
+            # await self.request_routes_to_server(Spu, previous_to_Spu)
             # Request all routes to test Spu insertion
             # DEBUG
-            # await self.request_routes_to_server(Spu, previous_to_Spu)
             await self.request_routes_to_server(Spu, filtered_stops_i)
             if verbose > 0:
                 logger.debug(f"\tAll necessary routes for pickup stop {Spu.id}'s insertion have been computed")
@@ -698,6 +702,7 @@ class Scheduler:
             logger.debug(f"Scheduling {len(self.pending_requests)} new requests")
             for req in self.pending_requests:
                 logger.debug(f"{req.to_string()}")
+        self.pending_requests.sort(key=lambda x: x.origin_time_ini)  # Sort requests by earliest issue time
         for i, request in enumerate(self.pending_requests):
             if verbose > 0:
                 logger.debug(f"Scheduling request num. {i} (customer {request.passenger_id})")
