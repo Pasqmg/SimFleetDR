@@ -5,11 +5,11 @@ from loguru import logger
 from spade.behaviour import State
 from spade.message import Message
 
-from demandResponsive.main.database import Database
-from demandResponsive.main.globals import CONFIG_PATH, STOPS_FILE, VEHICLE_ITINERARIES, CUSTOMER_ITINERARIES
-from demandResponsive.main.launcher import itinerary_from_db
-from demandResponsive.main.request import Request
-from demandResponsive.main.scheduler import Scheduler
+from simfleet.demandResponsive.main.database import Database
+from simfleet.demandResponsive.main.globals import CONFIG_PATH, STOPS_FILE, VEHICLE_ITINERARIES, CUSTOMER_ITINERARIES
+from simfleet.demandResponsive.main.launcher import itinerary_from_db
+from simfleet.demandResponsive.main.request import Request
+from simfleet.demandResponsive.main.scheduler import Scheduler
 from simfleet.common.agents.fleetmanager import FleetManagerAgent
 from simfleet.communications.protocol import TRAVEL_PROTOCOL, REQUEST_PERFORMATIVE
 

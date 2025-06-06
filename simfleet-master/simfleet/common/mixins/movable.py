@@ -1,6 +1,6 @@
 from asyncio.log import logger
 
-from demandResponsive.main.globals import SPEEDUP
+from simfleet.demandResponsive.main.globals import SPEEDUP
 from simfleet.utils.helpers import AlreadyInDestination, PathRequestException, distance_in_meters, kmh_to_ms
 from spade.behaviour import PeriodicBehaviour
 from simfleet.utils.routing import chunk_path, request_path

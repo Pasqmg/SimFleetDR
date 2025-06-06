@@ -3,7 +3,7 @@ import time
 
 import aiohttp
 
-from demandResponsive.main.globals import SERVICE_MINUTES_PER_PASSENGER, STOPS_FILE
+from simfleet.demandResponsive.main.globals import SERVICE_MINUTES_PER_PASSENGER, STOPS_FILE
 
 
 ################################################

@@ -5,10 +5,10 @@ import numpy
 import numpy as np
 from loguru import logger
 
-from demandResponsive.main.database import Database
-from demandResponsive.main.insertion import Insertion
-from demandResponsive.main.itinerary import Itinerary
-from demandResponsive.main.stop import Stop
+from simfleet.demandResponsive.main.database import Database
+from simfleet.demandResponsive.main.insertion import Insertion
+from simfleet.demandResponsive.main.itinerary import Itinerary
+from simfleet.demandResponsive.main.stop import Stop
 
 
 def stop_list_to_json_list(stop_list, vehicle_id=None):
