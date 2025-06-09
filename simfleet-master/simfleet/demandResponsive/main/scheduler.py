@@ -608,17 +608,22 @@ class Scheduler:
         if self.itinerary_insertion_dic[vehicle_id] is None:
             self.itinerary_insertion_dic[vehicle_id] = []
         self.itinerary_insertion_dic[vehicle_id].append(insertion)
-
+        logger.debug(f"Scheduler going to insert in itinerary {vehicle_id} with {len(insertion.I.stop_list)} stops:\n\t"
+                     f"{insertion.I.to_string_simple()}")
         # Extract Request attributes
         Spu, Ssd = insertion.t.Spu, insertion.t.Ssd
         Spu.passenger_id = passenger_id
         Ssd.passenger_id = passenger_id
 
         # Insert pickup stop and update itinerary times
+        logger.debug(f"Scheduler inserting pickup stop {Spu.id} at index {insertion.index_Spu} of itinerary {vehicle_id}")
         insertion.I.insert_stop(Spu, insertion.index_Spu)
 
         # Insert setdown stop and update itinerary times
+        logger.debug(f"Scheduler inserting setdown stop {Ssd.id} at index {insertion.index_Ssd} ")
         insertion.I.insert_stop(Ssd, insertion.index_Ssd)
+
+        logger.debug(f"Updating {vehicle_id}'s itinerary passenger-loading variables")
 
         # Initial definition of passenger-loading variables
         # S = Spu
@@ -633,11 +638,14 @@ class Scheduler:
         insertion.I.stop_list[insertion.index_Ssd].npres = insertion.I.stop_list[insertion.index_Ssd - 1].npres
 
         # Adjust passenger-loading variables for stops between Spu and Ssd.sprev (both included)
+        logger.debug(f"Updating {vehicle_id}'s itinerary passenger-loading variables between Spu and Ssd")
+
         npshare_t = insertion.I.capacity - insertion.t.npass
         for i in range(insertion.index_Spu, insertion.index_Ssd):
             insertion.I.stop_list[i].npass = insertion.I.stop_list[i].npass + insertion.t.npass
             insertion.I.stop_list[i].npres = insertion.I.stop_list[i].npres + (insertion.I.capacity - npshare_t)
 
+        logger.debug(f"Updating {vehicle_id}'s itinerary distance and time cost")
         # Update itinerary distance and time cost
         insertion.I.traveled_km = insertion.I.compute_traveled_km()
         insertion.I.cost = insertion.I.compute_cost()

@@ -2,6 +2,7 @@ import math
 
 import numpy
 import numpy as np
+from loguru import logger
 
 from simfleet.demandResponsive.main.stop import Stop
 
@@ -270,7 +271,7 @@ class Itinerary:
         Insert stop S in position index_S of the Itinerary. Assuming R = index_S-1 and T = index_S+1,
         previous leg (R -> T) becomes legs (R -> S) and (S -> T)
         """
-
+        logger.debug(f"Inserting stop {S.id} in itinerary {self.vehicle_id} at index {index_S} with npass {npass}")
         # Insert S after R in the itinerary
         self.stop_list.insert(index_S, S)
         S.sprev = self.stop_list[index_S - 1]
@@ -290,7 +291,7 @@ class Itinerary:
         S.set_EAT()
         S.set_LDT()
         S.set_slack()
-
+        logger.debug(f"Updating EATs...")
         # Propagate changes in EAT forward from S (may need to be delayed)
         for i in range(index_S + 1, len(self.stop_list)):
             self.stop_list[i].update_time_window()
@@ -298,7 +299,7 @@ class Itinerary:
             # if the change in EAT is 0, there is no need to update the subsequent stops
             # if change == 0:
             #     break
-
+        logger.debug(f"Updating LDTs...")
         # Propagate changes in LDT backward from S (may need to be advanced)
         for i in range(index_S - 1, -1, -1):
             self.stop_list[i].update_time_window()
@@ -306,7 +307,7 @@ class Itinerary:
             # if the change in EAT is 0, there is no need to update the previous stops
             # if change == 0:
             #     break
-
+        logger.debug(f"Setting arrival/departures...")
         R.set_arrival_departure()
         R.set_slack()
         S.set_arrival_departure()
@@ -317,6 +318,7 @@ class Itinerary:
         S.npass = R.npass + npass
         S.npres = R.npres + npass
 
+        logger.debug(f"Computing cost...")
         # Update cost
         self.compute_cost()
 
