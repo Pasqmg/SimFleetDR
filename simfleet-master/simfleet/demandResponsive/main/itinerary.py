@@ -64,7 +64,7 @@ class Itinerary:
         self.start_stop.latest = self.start_stop.end_time - self.start_stop.service_time
 
         # Trip stop attributes for destination stop
-        self.end_stop.start_time = self.start_time
+        self.end_stop.start_time = self.end_time
         self.end_stop.end_time = self.end_time
         self.end_stop.service_time = 0
         self.end_stop.latest = self.end_stop.end_time = self.end_time - self.end_stop.service_time
