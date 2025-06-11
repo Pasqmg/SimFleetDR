@@ -191,6 +191,8 @@ class Database:
     async def get_route_from_server(self, origin_id, destination_id):
         origin_coords = self.get_stop_coords(origin_id)
         destination_coords = self.get_stop_coords(destination_id)
+        origin_coords = [origin_coords[1], origin_coords[0]]
+        destination_coords = [destination_coords[1], destination_coords[0]]
         if origin_coords is None:
             logger.error(f"ERROR :: No coordinates for origin stop {origin_id}")
             logger.error(f"self.stops_dic: {self.stops_dic}")

@@ -411,7 +411,6 @@ class Scheduler:
 
                         # Filter list of stops to keep only those not yet visited
                         filtered_stops_j = [new_stop_from_stop(x) for x in I_with_Spu.stop_list[index_Spu:]]
-
                         for index_stop_j in range(len(filtered_stops_j) - 1):
                             if verbose > 0:
                                 logger.debug("\t\t\t\tTesting insertion of Ssd in position {}"

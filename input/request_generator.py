@@ -115,4 +115,4 @@ def generate_requests(n_requests, duration_minutes):
         print(f"Request '{req['name']}' añadida en el minuto {offset}")
 
 if __name__ == "__main__":
-    generate_requests(5, 5)
+    generate_requests(30, 20)

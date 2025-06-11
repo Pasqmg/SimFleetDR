@@ -272,6 +272,14 @@ class Itinerary:
         previous leg (R -> T) becomes legs (R -> S) and (S -> T)
         """
         logger.debug(f"Inserting stop {S.id} in itinerary {self.vehicle_id} at index {index_S} with npass {npass}")
+
+        if index_S >= len(self.stop_list):
+            logger.error(f"Aiming to insert stop {S.id} at index {index_S} in an itinerary with only "
+                           f"{len(self.stop_list)} stops.\n\t{self.to_string_simple()}")
+            logger.error(f"Changing index_S to last stop's position: {index_S} -> {len(self.stop_list)-1}")
+            index_S = len(self.stop_list)-1
+            logger.debug(f"Inserting stop {S.id} in itinerary {self.vehicle_id} at index {index_S} with npass {npass}")
+
         # Insert S after R in the itinerary
         self.stop_list.insert(index_S, S)
         S.sprev = self.stop_list[index_S - 1]
