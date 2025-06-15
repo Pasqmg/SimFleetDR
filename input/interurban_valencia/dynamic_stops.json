@@ -1,0 +1,215 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.380504, 39.476109]
+      },
+      "id": "stop_Ciutat_Vella"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.374295, 39.464698]
+      },
+      "id": "stop_Eixample"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.417301, 39.476748]
+      },
+      "id": "stop_Mislata"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.392868, 39.481313]
+      },
+      "id": "stop_Campanar"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.390019, 39.432759]
+      },
+      "id": "stop_La_Torre"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.330404, 39.462807]
+      },
+      "id": "stop_Poblats_Maritims"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.364502, 39.44821]
+      },
+      "id": "stop_Quatre_Carreres"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.400906, 39.404597]
+      },
+      "id": "stop_Catarroja"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.41889, 39.428923]
+      },
+      "id": "stop_Paiporta"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.464404, 39.494879]
+      },
+      "id": "stop_Manises"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.471732, 39.431717]
+      },
+      "id": "stop_Torrent"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.347178, 39.529129]
+      },
+      "id": "stop_Meliana"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.332432, 39.569928]
+      },
+      "id": "stop_Masamagrell"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.325676, 39.557723]
+      },
+      "id": "stop_Masalfasar"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.300006, 39.616582]
+      },
+      "id": "stop_Puzol"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.27922, 39.680379]
+      },
+      "id": "stop_Sagunto"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.224367, 39.66638]
+      },
+      "id": "stop_Puerto_de_Sagunto"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.395821, 39.568554]
+      },
+      "id": "stop_San_Isidro_de_Benageber"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.422288, 39.660288]
+      },
+      "id": "stop_Naquera"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.427445, 39.685934]
+      },
+      "id": "stop_Serra"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.554218, 39.596174]
+      },
+      "id": "stop_La_Pobla_de_Vallbona"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.606407, 39.604297]
+      },
+      "id": "stop_La_Buitrera"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.581366, 39.547764]
+      },
+      "id": "stop_Riba_roja_de_Turia"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.463691, 39.363014]
+      },
+      "id": "stop_Picassent"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.468618, 39.263658]
+      },
+      "id": "stop_Alginet"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.413281, 39.292684]
+      },
+      "id": "stop_Almusafes"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.567908, 39.493054]
+      },
+      "id": "stop_Loriguilla"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.685706, 39.493583]
+      },
+      "id": "stop_Cheste"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.718803, 39.472584]
+      },
+      "id": "stop_Chiva"
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "coordinates": [-0.314288, 39.638041]
+      },
+      "id": "stop_El_Picayo"
+    }
+  ]
+}
