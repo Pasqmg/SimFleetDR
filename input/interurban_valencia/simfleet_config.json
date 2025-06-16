@@ -22,7 +22,7 @@
       "optional": {
         "fleet": "DRManager@localhost"
       },
-      "name": "v01_Eixample"
+      "name": "v01_eixample"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -38,7 +38,7 @@
       "optional": {
         "fleet": "DRManager@localhost"
       },
-      "name": "v02_LaTorre"
+      "name": "v02_latorre"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -54,7 +54,7 @@
       "optional": {
         "fleet": "DRManager@localhost"
       },
-      "name": "v03_PoblatsMar"
+      "name": "v03_poblatsmar"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -72,7 +72,7 @@
       "optional": {
                 "fleet": "DRManager@localhost"
       },
-      "name": "v04_Manises"
+      "name": "v04_manises"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -88,7 +88,7 @@
       "optional": {
                 "fleet": "DRManager@localhost"
       },
-      "name": "v05_Meliana"
+      "name": "v05_meliana"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -105,7 +105,7 @@
       "optional": {
                 "fleet": "DRManager@localhost"
       },
-      "name": "v06_Sagunt"
+      "name": "v06_sagunt"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -121,7 +121,7 @@
       "optional": {
                 "fleet": "DRManager@localhost"
       },
-      "name": "v07_PoblaVallbona"
+      "name": "v07_poblavallbona"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -138,7 +138,7 @@
       "optional": {
                 "fleet": "DRManager@localhost"
       },
-      "name": "v08_Picassent"
+      "name": "v08_picassent"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -155,7 +155,7 @@
       "optional": {
             "fleet": "DRManager@localhost"
       },
-      "name": "v09_Alginet"
+      "name": "v09_alginet"
     },
     {
       "class": "simfleet.dr_transport_model.DRTransportAgent",
@@ -171,7 +171,7 @@
       "optional": {
                 "fleet": "DRManager@localhost"
       },
-      "name": "v10_Chiva"
+      "name": "v10_chiva"
     }
     ],
     "customers": [],
