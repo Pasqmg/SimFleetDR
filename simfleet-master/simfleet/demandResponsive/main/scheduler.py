@@ -214,6 +214,7 @@ class Scheduler:
         # Get itinerary by passenger_id
         I = self.get_itinerary_by_passenger_id(passenger_id)
         if I is None:
+            logger.error(f"Passenger {passenger_id} is not scheduled in an itinerary")
             return None
         # Search for the passenger's origin stop in the itinerary's stop_list
         origin_index = None
