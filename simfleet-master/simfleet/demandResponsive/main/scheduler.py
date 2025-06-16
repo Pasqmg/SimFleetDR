@@ -223,6 +223,7 @@ class Scheduler:
         for i, stop in enumerate(I.stop_list):
             if stop.passenger_id == passenger_id: # and "origin" in stop.id:
                 origin_index = i
+                break
                 # origin_stop = stop
         if origin_index is None:
             logger.error(f"Could not find origin stop for passenger {passenger_id} "
