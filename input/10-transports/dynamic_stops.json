@@ -1,1 +1,175 @@
-{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"coordinates": [-0.385079, 39.469949]}, "id": "veh_01_02"}, {"type": "Feature", "geometry": {"coordinates": [-0.357658, 39.521908]}, "id": "veh_03_04"}, {"type": "Feature", "geometry": {"coordinates": [-0.326572, 39.4464599991]}, "id": "veh_05_06"}, {"type": "Feature", "geometry": {"coordinates": [-0.4129508233, 39.3972468664]}, "id": "veh_07_08"}, {"type": "Feature", "geometry": {"coordinates": [-0.5175439092, 39.4727196425]}, "id": "veh_09_10"}, {"type": "Feature", "geometry": {"coordinates": [-0.3750648017, 39.4554710301]}, "id": "request_001_1-origin-63"}, {"type": "Feature", "geometry": {"coordinates": [-0.394699, 39.48439]}, "id": "request_001_1-destination-63"}, {"type": "Feature", "geometry": {"coordinates": [-0.385079, 39.469949]}, "id": "veh_01@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.385079, 39.469949]}, "id": "veh_02@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.357658, 39.521908]}, "id": "veh_03@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.357658, 39.521908]}, "id": "veh_04@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.326572, 39.4464599991]}, "id": "veh_05@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.326572, 39.4464599991]}, "id": "veh_06@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.4129508233, 39.3972468664]}, "id": "veh_07@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.4129508233, 39.3972468664]}, "id": "veh_08@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.5175439092, 39.4727196425]}, "id": "veh_09@localhost-current-0"}, {"type": "Feature", "geometry": {"coordinates": [-0.5175439092, 39.4727196425]}, "id": "veh_10@localhost-current-0"}]}
+    {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.385079,
+                        39.469949
+                    ]
+                },
+                "id": "veh_01_02"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.357658,
+                        39.521908
+                    ]
+                },
+                "id": "veh_03_04"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.326572,
+                        39.4464599991
+                    ]
+                },
+                "id": "veh_05_06"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.4129508233,
+                        39.3972468664
+                    ]
+                },
+                "id": "veh_07_08"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.5175439092,
+                        39.4727196425
+                    ]
+                },
+                "id": "veh_09_10"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.3750648017,
+                        39.4554710301
+                    ]
+                },
+                "id": "request_001_1-origin-63"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.394699,
+                        39.48439
+                    ]
+                },
+                "id": "request_001_1-destination-63"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.385079,
+                        39.469949
+                    ]
+                },
+                "id": "veh_01@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.385079,
+                        39.469949
+                    ]
+                },
+                "id": "veh_02@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.357658,
+                        39.521908
+                    ]
+                },
+                "id": "veh_03@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.357658,
+                        39.521908
+                    ]
+                },
+                "id": "veh_04@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.326572,
+                        39.4464599991
+                    ]
+                },
+                "id": "veh_05@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.326572,
+                        39.4464599991
+                    ]
+                },
+                "id": "veh_06@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.4129508233,
+                        39.3972468664
+                    ]
+                },
+                "id": "veh_07@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.4129508233,
+                        39.3972468664
+                    ]
+                },
+                "id": "veh_08@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.5175439092,
+                        39.4727196425
+                    ]
+                },
+                "id": "veh_09@localhost-current-0"
+            },
+            {
+                "type": "Feature",
+                "geometry": {
+                    "coordinates": [
+                        -0.5175439092,
+                        39.4727196425
+                    ]
+                },
+                "id": "veh_10@localhost-current-0"
+            }
+        ]
+    }
