@@ -223,8 +223,13 @@ class Scheduler:
             if stop.passenger_id == passenger_id: # and "origin" in stop.id:
                 origin_index = i
                 # origin_stop = stop
+        if origin_index is None:
+            logger.error(f"Could not find origin stop for passenger {passenger_id} "
+                         f"in itinerary {I.vehicle_id}")
+            return None
         # Search for the passenger's destination stop after the origin stop
-        for j, stop in enumerate(I.stop_list[origin_index+1:]):
+        for j in range (origin_index+1, len(I.stop_list)):
+            stop = I.stop_list[j]
             if stop.passenger_id == passenger_id: # and "destination" in stop.id:
                 destination_index = j
                 # destination_stop = stop
