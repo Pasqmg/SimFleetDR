@@ -218,12 +218,15 @@ class Scheduler:
         # Search for the passenger's origin stop in the itinerary's stop_list
         origin_index = None
         destination_index = None
+        # Search for the passenger's origi stop
         for i, stop in enumerate(I.stop_list):
-            if stop.passenger_id == passenger_id and "origin" in stop.id:
+            if stop.passenger_id == passenger_id: # and "origin" in stop.id:
                 origin_index = i
                 # origin_stop = stop
-            if stop.passenger_id == passenger_id and "destination" in stop.id:
-                destination_index = i
+        # Search for the passenger's destination stop after the origin stop
+        for j, stop in enumerate(I.stop_list[origin_index+1:]):
+            if stop.passenger_id == passenger_id: # and "destination" in stop.id:
+                destination_index = j
                 # destination_stop = stop
                 break
         if origin_index is None or destination_index is None:
