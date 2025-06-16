@@ -234,8 +234,8 @@ class Scheduler:
                 destination_index = j
                 # destination_stop = stop
                 break
-        if origin_index is None or destination_index is None:
-            logger.error(f"Could not find origin or destination stop for passenger {passenger_id} "
+        if destination_index is None:
+            logger.error(f"Could not find destination stop for passenger {passenger_id} "
                          f"in itinerary {I.vehicle_id}")
             return None
         elif origin_index > destination_index:
