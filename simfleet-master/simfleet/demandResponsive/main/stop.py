@@ -191,20 +191,31 @@ class Stop:
         #     print(f"WARNING :: Negative slack time ({self.slack:.2f}) in stop {self.id}\n"
         #           f"\tLDT: {self.ldt:.2f}, EAT: {self.eat:.2f}, service_time: {self.service_time:.2f}")
 
+    # def set_arrival_departure(self):
+    #     """
+    #     Sets the time at which the vehicle visiting the Stop will arrive to it and depart from it.
+    #     These values are computed according to the dispatching strategy.
+    #     """
+    #     if self.sprev is None:
+    #        self.arrival_time = self.start_time
+    #     else:
+    #         #self.arrival_time = self.eat_f
+    #         self.arrival_time = max(self.start_time + self.sprev.leg_time, self.eat_f)
+    #     if self.snext is not None:
+    #         # self.departure_time = self.snext.eat_f - self.leg_time
+    #         # This is computed assuming pickup_stops have start_time == issue_time, which is not true for this version
+    #         self.departure_time = max(self.snext.start_time, self.snext.eat_f - self.leg_time)
+    #     else:
+    #         self.departure_time = math.inf
+
     def set_arrival_departure(self):
         """
         Sets the time at which the vehicle visiting the Stop will arrive to it and depart from it.
         These values are computed according to the dispatching strategy.
         """
-        if self.sprev is None:
-           self.arrival_time = self.start_time
-        else:
-            #self.arrival_time = self.eat_f
-            self.arrival_time = max(self.start_time + self.sprev.leg_time, self.eat_f)
+        self.arrival_time = self.eat_f
         if self.snext is not None:
             self.departure_time = self.snext.eat_f - self.leg_time
-            # This is computed assuming pickup_stops have start_time == issue_time, which is not true for this version
-            # self.departure_time = max(self.snext.start_time, self.snext.eat_f - self.leg_time)
         else:
             self.departure_time = math.inf
 
