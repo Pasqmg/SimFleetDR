@@ -1,5 +1,5 @@
 from simfleet.demandResponsive.main.utils import get_service_time
-from simfleet.demandResponsive.main.globals import MAXIMUM_WAITING_TIME_MINUTES
+from simfleet.demandResponsive.main.globals import MAXIMUM_WAITING_TIME_MINUTES, TRAVEL_FACTOR
 from simfleet.demandResponsive.main.stop import Stop
 
 
@@ -73,9 +73,9 @@ class Request:
         window to the trip setdown stop (self.Ssd)
         """
         # Compute setdown time window end according to maximum waiting time, travel factor and direct trip time
-        # Ssd_end_time = self.origin_time_ini + self.service_time + MAXIMUM_WAITING_TIME_MINUTES \
-        #               + TRAVEL_FACTOR * self.db.get_route_time_min(self.origin_id,
-        #                                                            self.destination_id) + self.service_time
+        Ssd_end_time = self.origin_time_ini + self.service_time + MAXIMUM_WAITING_TIME_MINUTES \
+                       + TRAVEL_FACTOR * self.db.get_route_time_min(self.origin_id,
+                                                                    self.destination_id) + self.service_time
         # If the user defined a setdown end time, keep the minimum
         if self.destination_time_end is not None:
             Ssd_end_time = self.destination_time_end #min(self.destination_time_end, Ssd_end_time)

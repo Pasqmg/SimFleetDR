@@ -202,8 +202,9 @@ class Stop:
             #self.arrival_time = self.eat_f
             self.arrival_time = max(self.start_time + self.sprev.leg_time, self.eat_f)
         if self.snext is not None:
-            # self.departure_time = self.snext.eat_f - self.leg_time
-            self.departure_time = max(self.snext.start_time, self.snext.eat_f - self.leg_time)
+            self.departure_time = self.snext.eat_f - self.leg_time
+            # This is computed assuming pickup_stops have start_time == issue_time, which is not true for this version
+            # self.departure_time = max(self.snext.start_time, self.snext.eat_f - self.leg_time)
         else:
             self.departure_time = math.inf
 
